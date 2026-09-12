@@ -42,8 +42,8 @@ async function start() {
     await sequelize.authenticate();
     console.log('✅ Database connected successfully.');
 
-    // Sync models (use { alter: true } in development)
-    await sequelize.sync({ alter: true });
+    // Sync models
+    await sequelize.sync();
     console.log('✅ Models synced.');
 
     app.listen(PORT, () => {

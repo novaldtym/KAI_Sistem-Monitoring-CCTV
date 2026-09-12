@@ -14,9 +14,12 @@ const Layout = () => {
         position="top-right"
         toastOptions={{
           style: {
-            background: '#1e2538',
-            color: '#e8eaed',
-            border: '1px solid #2a3344',
+            background: '#ffffff',
+            color: '#0f172a',
+            border: '1px solid #e2e8f0',
+            boxShadow: '0 8px 20px -4px rgba(15, 23, 42, 0.1)',
+            fontWeight: 500,
+            fontSize: '13px',
           },
         }}
       />
