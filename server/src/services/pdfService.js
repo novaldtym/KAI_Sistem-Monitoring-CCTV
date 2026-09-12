@@ -103,9 +103,9 @@ async function generateMonitoringPDF(reportData) {
 
   const pdfBuffer = await page.pdf({
     format: 'A4',
-    landscape: false,
+    landscape: true,
     printBackground: true,
-    margin: { top: '6mm', right: '8mm', bottom: '6mm', left: '8mm' },
+    margin: { top: '5mm', right: '8mm', bottom: '5mm', left: '8mm' },
   });
 
   await browser.close();
