@@ -12,7 +12,7 @@ Handlebars.registerHelper('formatDate', (dateStr) => {
 });
 Handlebars.registerHelper('statusSymbol', (val) => {
   if (val === 'V') return '✓';
-  if (val === 'X') return '✗';
+  if (val === 'X') return 'X';
   return '';
 });
 
@@ -30,8 +30,15 @@ async function generateMonitoringPDF(reportData) {
   );
 
   // Prepare data
-  const bulanLabel = `${String(reportData.bulan).padStart(2, '0')}-${MONTHS[reportData.bulan].substring(0, 3)}-${String(reportData.tahun).slice(-2)}`;
-  const tanggalLabel = `${String(reportData.bulan).padStart(2, '0')}-12-${reportData.tahun}`;
+  const bulanLabel = `01-${MONTHS[reportData.bulan].substring(0, 3)}-${String(reportData.tahun).slice(-2)}`;
+  let tanggalLabel = '-';
+  if (reportData.tanggal_m1) {
+    const d = new Date(reportData.tanggal_m1);
+    tanggalLabel = `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
+  } else if (reportData.createdAt) {
+    const d = new Date(reportData.createdAt);
+    tanggalLabel = `${String(d.getDate()).padStart(2, '0')}-${String(d.getMonth() + 1).padStart(2, '0')}-${d.getFullYear()}`;
+  }
 
   // Load official KAI WebP Logo as base64
   const logoPath = path.join(__dirname, '../assets/logo-kai.webp');
@@ -46,7 +53,7 @@ async function generateMonitoringPDF(reportData) {
   const html = template({
     kaiLogoBase64,
     noRef: reportData.no_ref || '-',
-    nomorDokumen: 'FR.SM/IT/015.017/10-2020',
+    nomorDokumen: 'FR.SM/TI/015.017/10-2020',
     tanggalTerbit: '12 Oktober 2020',
     versi: '002-2020',
     businessArea: reportData.station?.business_area || '-',
