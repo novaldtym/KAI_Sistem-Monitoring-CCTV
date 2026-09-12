@@ -231,13 +231,12 @@
     <table class="header-table">
       <tr>
         <td class="header-left">
-          <!-- Official KAI SVG Logo -->
-          <svg width="90" height="30" viewBox="0 0 160 55" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 8H26V25.5L42 8H59L38 28.5L60 48H43L26 31V48H12V8Z" fill="#0D2C6C"/>
-            <path d="M63 48L81 8H97L115 48H98L94 38H80L76 48H63ZM83 29.5H91L87 18.5L83 29.5Z" fill="#0D2C6C"/>
-            <polygon points="72,42 102,26 106,31 76,47" fill="#F36F21"/>
-            <path d="M119 8H133V48H119V8Z" fill="#0D2C6C"/>
-          </svg>
+          <!-- Official KAI Logo Image -->
+          {{#if kaiLogoBase64}}
+          <img src="{{kaiLogoBase64}}" alt="KAI Logo" style="width: 85px; height: auto; max-height: 32px; display: block; margin: 0 auto 3px; object-fit: contain;" />
+          {{else}}
+          <div style="font-size: 14pt; font-weight: bold; color: #0D2C6C;">KAI</div>
+          {{/if}}
           <div>
             <span class="terbatas-box">TERBATAS</span>
           </div>

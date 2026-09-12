@@ -33,9 +33,18 @@ async function generateMonitoringPDF(reportData) {
   const bulanLabel = `${String(reportData.bulan).padStart(2, '0')}-${MONTHS[reportData.bulan].substring(0, 3)}-${String(reportData.tahun).slice(-2)}`;
   const tanggalLabel = `${String(reportData.bulan).padStart(2, '0')}-12-${reportData.tahun}`;
 
+  // Load official KAI WebP Logo as base64
+  const logoPath = path.join(__dirname, '../assets/logo-kai.webp');
+  let kaiLogoBase64 = '';
+  if (fs.existsSync(logoPath)) {
+    const logoBuffer = fs.readFileSync(logoPath);
+    kaiLogoBase64 = `data:image/webp;base64,${logoBuffer.toString('base64')}`;
+  }
+
   const approvalLog = reportData.approvalLogs && reportData.approvalLogs[0];
 
   const html = template({
+    kaiLogoBase64,
     noRef: reportData.no_ref || '-',
     nomorDokumen: 'FR.SM/IT/015.017/10-2020',
     tanggalTerbit: '12 Oktober 2020',

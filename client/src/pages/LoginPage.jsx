@@ -30,8 +30,8 @@ const LoginPage = () => {
     <div className="login-page">
       <div className="login-card fade-in">
         <div className="login-logo">
-          <div className="login-logo-text">KAI</div>
-          <div className="login-logo-badge">SYSTEM INFORMASI</div>
+          <img src="/logo-kai.webp" alt="PT Kereta Api Indonesia" className="login-logo-img" />
+          <div className="login-logo-badge">SISTEM INFORMASI</div>
         </div>
 
         <h1 className="login-title">Monitoring CCTV</h1>

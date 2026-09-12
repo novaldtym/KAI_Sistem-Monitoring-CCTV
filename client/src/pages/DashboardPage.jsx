@@ -37,21 +37,21 @@ const DashboardPage = () => {
       </div>
 
       <div className="stats-grid">
-        <div className="stat-card blue">
-          <div className="stat-value">{counts.draft}</div>
+        <div className="stat-card">
           <div className="stat-label">Draft</div>
+          <div className="stat-value">{counts.draft}</div>
         </div>
-        <div className="stat-card yellow">
-          <div className="stat-value">{counts.submitted}</div>
+        <div className="stat-card">
           <div className="stat-label">Menunggu Review</div>
+          <div className="stat-value">{counts.submitted}</div>
         </div>
-        <div className="stat-card green">
-          <div className="stat-value">{counts.approved}</div>
+        <div className="stat-card">
           <div className="stat-label">Approved</div>
+          <div className="stat-value">{counts.approved}</div>
         </div>
-        <div className="stat-card red">
-          <div className="stat-value">{counts.rejected}</div>
+        <div className="stat-card">
           <div className="stat-label">Ditolak</div>
+          <div className="stat-value">{counts.rejected}</div>
         </div>
       </div>
 

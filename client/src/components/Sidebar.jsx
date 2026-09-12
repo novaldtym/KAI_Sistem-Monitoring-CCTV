@@ -33,7 +33,7 @@ const Sidebar = () => {
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <div className="sidebar-logo">KAI</div>
+        <img src="/logo-kai.webp" alt="PT Kereta Api Indonesia" className="sidebar-logo-img" />
         <div className="sidebar-logo-sub">MONITORING CCTV</div>
       </div>
 
