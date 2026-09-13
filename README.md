@@ -106,10 +106,10 @@ npm run dev
 
 Sistem sudah dilengkapi 2 akun untuk pengujian role:
 
-| Role | NIPP | Password | Jabatan | Hak Akses |
-|------|------|----------|---------|-----------|
-| **Petugas** | `30566` | `petugas123` | Petugas IT Support | Input data mingguan, simpan draft, edit, submit laporan |
-| **Assistant Manager** | `43494` | `manager123` | Asst. Manager IT Support 1 | Review laporan, Approve/Reject + komentar, Cetak PDF, CRUD Master Data CCTV & Stasiun |
+| Role | NIPP | Password | Nama | Jabatan | Hak Akses |
+|------|------|----------|------|---------|-----------|
+| **Petugas** | `12345` | `12345` | PETUGAS 1 | Petugas IT Support | Input data mingguan, simpan draft, edit, submit laporan |
+| **Assistant Manager** | `99999` | `12345` | MANAGER 1 | Asst. Manager IT Support 1 | Review laporan, Approve/Reject + komentar, Cetak PDF, CRUD Master Data CCTV & Stasiun |
 
 ---
 

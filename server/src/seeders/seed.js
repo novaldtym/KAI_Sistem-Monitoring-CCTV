@@ -10,19 +10,19 @@ async function seed() {
     // === USERS ===
     console.log('👤 Seeding users...');
     const manager = await User.create({
-      nipp: '43494',
-      nama: 'SUDIRJO',
-      email: 'sudirjo@kai.id',
-      password_hash: 'manager123',
+      nipp: '99999',
+      nama: 'MANAGER 1',
+      email: 'manager1@kai.id',
+      password_hash: '12345',
       role: 'assistant_manager',
       jabatan: 'Assistant Manager IT Support 1',
     });
 
     const petugas = await User.create({
-      nipp: '30566',
-      nama: 'RONI',
-      email: 'roni@kai.id',
-      password_hash: 'petugas123',
+      nipp: '12345',
+      nama: 'PETUGAS 1',
+      email: 'petugas1@kai.id',
+      password_hash: '12345',
       role: 'petugas',
       jabatan: 'Petugas IT Support',
     });
@@ -101,8 +101,8 @@ async function seed() {
     console.log('✅ Seeding selesai!');
     console.log('');
     console.log('=== AKUN LOGIN ===');
-    console.log('Assistant Manager : NIPP=43494, Password=manager123');
-    console.log('Petugas           : NIPP=30566, Password=petugas123');
+    console.log('Assistant Manager : NIPP=99999, Password=12345');
+    console.log('Petugas           : NIPP=12345, Password=12345');
     console.log('');
 
     process.exit(0);

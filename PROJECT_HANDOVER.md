@@ -492,12 +492,12 @@ d:/MAGANG DOKUMEN/KAI/monitoring-cctv/
 
 ## 8. Akun Pengujian Bawaan (Default Seeded Users)
 
-Aplikasi telah dilengkapi seeder data awal dengan akun kedinasan:
+Aplikasi telah dilengkapi seeder data awal dengan akun kedinasan yang mudah digunakan saat demo:
 
 | Role Pengguna | NIPP | Password | Nama Pegawai | Jabatan Kedinasan | Wewenang Utama |
 | :--- | :---: | :---: | :--- | :--- | :--- |
-| **Petugas IT Support** | `30566` | `petugas123` | **RONI** | Petugas IT Support | Input monitoring mingguan (M1-M4), simpan draft, revisi penolakan, submit laporan ke atasan. |
-| **Assistant Manager** | `43494` | `manager123` | **SUDIRJO** | Assistant Manager IT Support 1 | Meninjau laporan masuk, menyetujui/menolak laporan + catatan, cetak PDF legal, mengelola Master Stasiun & CCTV. |
+| **Petugas IT Support** | `12345` | `12345` | **PETUGAS 1** | Petugas IT Support | Input monitoring mingguan (M1-M4), simpan draft, revisi penolakan, submit laporan ke atasan. |
+| **Assistant Manager** | `99999` | `12345` | **MANAGER 1** | Assistant Manager IT Support 1 | Meninjau laporan masuk, menyetujui/menolak laporan + catatan, cetak PDF legal, mengelola Master Stasiun & CCTV. |
 
 ---
 
