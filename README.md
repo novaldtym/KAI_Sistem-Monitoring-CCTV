@@ -37,7 +37,7 @@ monitoring-cctv/
     │   ├── pages/            # Login, Dashboard, Form Input, List, Detail, Review, Master Data
     │   ├── services/         # Axios API Client
     │   ├── App.jsx           # Routing & Protected Routes
-    │   └── index.css         # Dark Theme Design System (KAI Palette)
+    │   └── index.css         # Clean KAI Corporate Light Theme (Design Tokens & Color Palette)
     └── package.json
 ```
 
