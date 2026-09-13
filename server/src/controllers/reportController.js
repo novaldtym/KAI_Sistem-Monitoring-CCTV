@@ -4,7 +4,7 @@ const { MonitoringReport, MonitoringDetail, CCTVPoint, Station, User, ApprovalLo
 
 exports.getAll = async (req, res, next) => {
   try {
-    const { bulan, tahun, station_id, status, page = 1, limit = 10 } = req.query;
+    const { bulan, tahun, station_id, status, page = 1, limit = 10, created_by } = req.query;
     const where = {};
     
     if (bulan) where.bulan = bulan;
@@ -15,6 +15,8 @@ exports.getAll = async (req, res, next) => {
     // Petugas only sees own reports
     if (req.user.role === 'petugas') {
       where.created_by = req.user.id;
+    } else if (created_by) {
+      where.created_by = created_by;
     }
 
     const offset = (parseInt(page) - 1) * parseInt(limit);

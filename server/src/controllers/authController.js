@@ -37,3 +37,17 @@ exports.login = async (req, res, next) => {
 exports.me = async (req, res) => {
   res.json({ user: req.user.toJSON() });
 };
+
+exports.getOfficers = async (req, res, next) => {
+  try {
+    const officers = await User.findAll({
+      where: { role: 'petugas', is_active: true },
+      attributes: ['id', 'nipp', 'nama'],
+      order: [['nama', 'ASC']],
+    });
+    res.json({ data: officers });
+  } catch (error) {
+    next(error);
+  }
+};
+

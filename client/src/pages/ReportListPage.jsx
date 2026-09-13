@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { getReportsApi, getStationsApi, downloadReportPdfApi } from '../services/api';
+import { getReportsApi, getStationsApi, getOfficersApi, downloadReportPdfApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import { FiPlus, FiEye, FiEdit, FiDownload, FiFilter, FiRefreshCw } from 'react-icons/fi';
@@ -11,10 +11,12 @@ const ReportListPage = () => {
 
   const [reports, setReports] = useState([]);
   const [stations, setStations] = useState([]);
+  const [officers, setOfficers] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // Filters
   const [selectedStation, setSelectedStation] = useState('');
+  const [selectedOfficer, setSelectedOfficer] = useState('');
   const [bulan, setBulan] = useState('');
   const [tahun, setTahun] = useState('');
   const [status, setStatus] = useState('');
@@ -25,12 +27,16 @@ const ReportListPage = () => {
 
   useEffect(() => {
     getStationsApi().then((res) => setStations(res.data.data));
-  }, []);
+    if (user?.role === 'assistant_manager') {
+      getOfficersApi().then((res) => setOfficers(res.data.data || [])).catch(() => {});
+    }
+  }, [user]);
 
   const fetchReports = () => {
     setLoading(true);
     getReportsApi({
       station_id: selectedStation || undefined,
+      created_by: selectedOfficer || undefined,
       bulan: bulan || undefined,
       tahun: tahun || undefined,
       status: status || undefined,
@@ -47,7 +53,7 @@ const ReportListPage = () => {
 
   useEffect(() => {
     fetchReports();
-  }, [selectedStation, bulan, tahun, status, page]);
+  }, [selectedStation, selectedOfficer, bulan, tahun, status, page]);
 
   const handleDownloadPdf = async (report) => {
     const toastId = toast.loading('Generating PDF...');
@@ -127,7 +133,7 @@ const ReportListPage = () => {
 
         <div className="form-group">
           <label className="form-label">Status</label>
-          <select className="form-control" value={status} onChange={(e) => setStatus(e.target.value)}>
+          <select className="form-control" value={status} onChange={(e) => { setStatus(e.target.value); setPage(1); }}>
             <option value="">Semua Status</option>
             <option value="draft">Draft</option>
             <option value="submitted">Submitted</option>
@@ -136,10 +142,26 @@ const ReportListPage = () => {
           </select>
         </div>
 
+        {user?.role === 'assistant_manager' && (
+          <div className="form-group">
+            <label className="form-label">Petugas Input</label>
+            <select
+              className="form-control"
+              value={selectedOfficer}
+              onChange={(e) => { setSelectedOfficer(e.target.value); setPage(1); }}
+            >
+              <option value="">Semua Petugas</option>
+              {officers.map((off) => (
+                <option key={off.id} value={off.id}>{off.nama} ({off.nipp})</option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <button
           className="btn btn-secondary btn-sm"
           onClick={() => {
-            setSelectedStation(''); setBulan(''); setTahun(''); setStatus(''); setPage(1);
+            setSelectedStation(''); setSelectedOfficer(''); setBulan(''); setTahun(''); setStatus(''); setPage(1);
           }}
         >
           <FiRefreshCw /> Reset

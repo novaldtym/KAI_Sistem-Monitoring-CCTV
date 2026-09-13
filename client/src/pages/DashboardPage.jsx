@@ -30,9 +30,9 @@ const DashboardPage = () => {
   return (
     <div className="fade-in">
       <div className="page-header">
-        <h1 className="page-title">Selamat Datang, {user?.nama}</h1>
+        <h1 className="page-title">Sistem Form Monitoring CCTV PT KAI</h1>
         <p className="page-subtitle">
-          Sistem Digitalisasi Monitoring CCTV PT KAI — Periode {MONTHS[data?.currentPeriod?.bulan]} {data?.currentPeriod?.tahun}
+          PT Kereta Api Indonesia (Persero)
         </p>
       </div>
 

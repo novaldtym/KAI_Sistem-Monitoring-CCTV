@@ -39,6 +39,7 @@ api.interceptors.response.use(
 // --- Auth APIs ---
 export const loginApi = (data) => api.post('/auth/login', data);
 export const getMeApi = () => api.get('/auth/me');
+export const getOfficersApi = () => api.get('/auth/officers');
 
 // --- Dashboard APIs ---
 export const getDashboardSummaryApi = () => api.get('/dashboard/summary');
