@@ -127,3 +127,18 @@ Sistem sudah dilengkapi 2 akun untuk pengujian role:
    - Menggunakan Puppeteer (Chromium Engine) merender HTML Handlebars template.
    - Mengikuti tata letak asli: Header logo KAI, metadata No Ref/Nomor/Versi, tabel M1-M4, catatan, serta blok tanda tangan NIPP Asst. Manager & Petugas.
 5. **Master Data Management**: CRUD Stasiun, Business Area, dan Titik CCTV per stasiun.
+
+---
+
+## 👥 Tim Pengembang (Development Team)
+
+Proyek ini dirancang dan dikembangkan secara kolaboratif oleh tim beranggotakan 5 orang:
+
+| Nama Anggota | Peran Utama | Fokus Area & Tanggung Jawab Teknis |
+| :--- | :--- | :--- |
+| **Nouval** | **Project Leader & Fullstack Lead** | Arsitektur sistem menyeluruh, arsitektur keamanan & autentikasi JWT, middleware RBAC, koordinasi tim pengembang & repositori GitHub. |
+| **Bagas** | **Frontend Developer & UI/UX Specialist** | Antarmuka pengguna SPA React 18 (Vite), Clean KAI Corporate Light Theme, komponen interaktif StatusToggle matriks M1-M4, & routing dinamis. |
+| **Galih** | **Backend Developer & REST API Engineer** | Backend RESTful API Express.js, business controllers (Reports, Dashboard Analytics, Stations, CCTV), error handling terpusat, & validasi data. |
+| **Putra** | **Database Administrator (DBA) & Data Modeler** | Perancangan ERD relasional MySQL 8.0, konfigurasi ORM Sequelize, composite unique constraints (`uq_report_period`), & skrip database seeder. |
+| **Ali** | **Reporting Engine Specialist & QA / Docs** | Engine Puppeteer PDF Generator (A4 Landscape presisi form fisik KAI), fallback browser Chromium Windows, QA testing, & dokumentasi PRD / Handover. |
+

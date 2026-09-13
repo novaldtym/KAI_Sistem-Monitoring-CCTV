@@ -1,7 +1,7 @@
 # 📑 DOKUMEN HANDOVER & PRODUCT REQUIREMENT DOCUMENT (PRD)
 ## SISTEM INFORMASI DIGITALISASI MONITORING CCTV — PT KERETA API INDONESIA (PERSERO)
 
-> **Dokumen Resmi Arsitektur, Kebutuhan Produk (PRD), & Panduan Handover Pengembang**  
+> **Dokumen Resmi Arsitektur, Kebutuhan Produk (PRD), Struktur Tim & Panduan Handover Pengembang**  
 > **Nomor Dokumen Acuan Formulir**: `FR.SM/TI/015.017/10-2020`  
 > **Klasifikasi Dokumen**: TERBATAS  
 > **Tanggal Pembaruan**: September 2026  
@@ -18,13 +18,16 @@
    - [2.3 Spesifikasi Kebutuhan Fungsional (FR)](#23-spesifikasi-kebutuhan-fungsional-fr)
    - [2.4 Spesifikasi Kebutuhan Non-Fungsional (NFR)](#24-spesifikasi-kebutuhan-non-fungsional-nfr)
    - [2.5 Alur Kerja Bisnis & State Machine](#25-alur-kerja-bisnis--state-machine)
-3. [Arsitektur Sistem & Tech Stack](#3-arsitektur-sistem--tech-stack)
-4. [Skema Database & Kamus Data (MySQL 8.0)](#4-skema-database--kamus-data-mysql-80)
-5. [Spesifikasi RESTful API Endpoints](#5-spesifikasi-restful-api-endpoints)
-6. [Struktur Repositori & File Kunci](#6-struktur-repositori--file-kunci)
-7. [Akun Pengujian Bawaan (Default Seeded Users)](#7-akun-pengujian-bawaan-default-seeded-users)
-8. [Panduan Instalasi & Menjalankan Aplikasi](#8-panduan-instalasi--menjalankan-aplikasi)
-9. [Catatan Teknis, Solusi Kendala & Riwayat Perubahan](#9-catatan-teknis-solusi-kendala--riwayat-perubahan)
+3. [Tim Pengembang & Pembagian Peran (5 Anggota)](#3-tim-pengembang--pembagian-peran-5-anggota)
+   - [3.1 Profil & Tanggung Jawab Anggota Tim](#31-profil--tanggung-jawab-anggota-tim)
+   - [3.2 Matriks Tanggung Jawab (RACI Matrix)](#32-matriks-tanggung-jawab-raci-matrix)
+4. [Arsitektur Sistem & Tech Stack](#4-arsitektur-sistem--tech-stack)
+5. [Skema Database & Kamus Data (MySQL 8.0)](#5-skema-database--kamus-data-mysql-80)
+6. [Spesifikasi RESTful API Endpoints](#6-spesifikasi-restful-api-endpoints)
+7. [Struktur Repositori & File Kunci](#7-struktur-repositori--file-kunci)
+8. [Akun Pengujian Bawaan (Default Seeded Users)](#8-akun-pengujian-bawaan-default-seeded-users)
+9. [Panduan Instalasi & Menjalankan Aplikasi](#9-panduan-instalasi--menjalankan-aplikasi)
+10. [Catatan Teknis, Solusi Kendala & Riwayat Perubahan](#10-catatan-teknis-solusi-kendala--riwayat-perubahan)
 
 ---
 
@@ -169,7 +172,95 @@ stateDiagram-v2
 
 ---
 
-## 3. Arsitektur Sistem & Tech Stack
+## 3. Tim Pengembang & Pembagian Peran (5 Anggota)
+
+Proyek sistem informasi monitoring CCTV ini dirancang dan dikembangkan secara kolaboratif oleh tim yang terdiri dari **5 orang pengembang**, dengan spesialisasi peran, fokus area, dan tanggung jawab yang terbagi secara terstruktur:
+
+### 3.1 Profil & Tanggung Jawab Anggota Tim
+
+```text
+┌────────────────────────────────────────────────────────────────────────┐
+│               TIM PENGEMBANG MONITORING CCTV PT KAI                    │
+├──────────────┬──────────────────────────────────┬──────────────────────┤
+│ Nama Anggota │ Peran Utama                      │ Fokus Area Teknis    │
+├──────────────┼──────────────────────────────────┼──────────────────────┤
+│ Nouval       │ Project Leader & Fullstack Lead  │ Arsitektur & Keamanan│
+│ Bagas        │ Frontend Developer & UI/UX       │ Antarmuka & Tema KAI │
+│ Galih        │ Backend Developer & API Engineer │ REST API & Workflow  │
+│ Putra        │ Database Administrator (DBA)     │ MySQL, ERD & Seeder  │
+│ Ali          │ Reporting Engine & QA Specialist │ PDF Engine & Dokumen │
+└──────────────┴──────────────────────────────────┴──────────────────────┘
+```
+
+#### 1. Nouval — Project Leader & Fullstack / Security Lead
+- **Deskripsi Peran**: Penanggung jawab utama siklus hidup proyek (*End-to-End Delivery*), kepemimpinan tim, serta perancangan arsitektur sistem menyeluruh.
+- **Tanggung Jawab Teknis**:
+  - Mengorkestrasi arsitektur sistem secara menyeluruh dari sisi klien hingga server.
+  - Merancang dan mengimplementasikan sistem autentikasi berbasis JSON Web Token (JWT) serta pengelolaan sesi pengguna.
+  - Mengembangkan middleware otorisasi berbasis peran (*Role-Based Access Control / RBAC*) pada level route dan komponen guard frontend.
+  - Memimpin integrasi antar-layer (Frontend SPA ke Backend REST API).
+  - Mengelola repositori GitHub, alur percabangan (*Git branching*), *code review*, dan persiapan *deployment handover*.
+
+#### 2. Bagas — Frontend Developer & UI/UX Specialist
+- **Deskripsi Peran**: Penanggung jawab desain interaksi antarmuka pengguna, konsistensi visual korporat KAI, dan performa aplikasi di sisi peramban (*client-side*).
+- **Tanggung Jawab Teknis**:
+  - Mengembangkan aplikasi Single Page Application (SPA) berbasis React.js 18 dan Vite.
+  - Mengimplementasikan sistem desain **Clean KAI Corporate Light Theme** menggunakan Vanilla CSS Design Tokens (palet `#0d2c6c` Deep Blue & `#f36f21` Signature Orange).
+  - Membangun komponen interaktif matriks pemeriksaan mingguan (M1-M4) dengan tombol status `StatusToggle` tri-state (`✓`, `X`, `-`).
+  - Mengembangkan tata letak halaman responsif, navigasi dinamis dengan `ProtectedRoute`, dan sistem notifikasi interaktif (*React Hot Toast*).
+
+#### 3. Galih — Backend Developer & REST API Engineer
+- **Deskripsi Peran**: Penanggung jawab logika bisnis server, pemrosesan transaksi, serta penyediaan antarmuka data RESTful API yang aman dan andal.
+- **Tanggung Jawab Teknis**:
+  - Membangun RESTful API menggunakan Express.js dan Node.js.
+  - Mengembangkan controller inti: pengelolaan laporan (`reportController`), agregasi analitik dashboard kepatuhan (`dashboardController`), dan master data stasiun serta CCTV.
+  - Mengimplementasikan alur logika persetujuan bertingkat (*Approval & Rejection Workflow with Mandatory Feedback*).
+  - Mengonfigurasi middleware keamanan server (*Helmet*, *CORS*), validasi parameter request, dan penanganan kesalahan terpusat (*Centralized Error Handler*).
+
+#### 4. Putra — Database Administrator (DBA) & Data Modeler
+- **Deskripsi Peran**: Penanggung jawab integritas data, efisiensi skema database relasional, dan konsistensi persistensi data operasional.
+- **Tanggung Jawab Teknis**:
+  - Merancang Entity Relationship Diagram (ERD) dan skema fisik 6 tabel relasional di MySQL 8.0.
+  - Mengonfigurasi pemodelan objek ORM Sequelize (relasi `hasMany`, `belongsTo`, foreign keys, cascade delete constraints).
+  - Menetapkan indeks unik database (`uq_report_period` dan `uq_detail`) untuk mencegah anomali dan duplikasi laporan per periode stasiun.
+  - Menyusun dan menguji skrip otomatisasi seeder data awal (`seed.js`) untuk Stasiun Lempuyangan, 20 titik CCTV resmi, dan kredensial akun kedinasan.
+
+#### 5. Ali — Reporting Engine Specialist & QA / Technical Documenter
+- **Deskripsi Peran**: Penanggung jawab modul cetak dokumen legalitas formal KAI, penjaminan kualitas aplikasi, dan kelengkapan dokumentasi proyek.
+- **Tanggung Jawab Teknis**:
+  - Mengembangkan *PDF Generator Engine* berbasis Puppeteer Headless Chromium dan Handlebars template.
+  - Mereplikasi tata letak formulir fisik resmi KAI `FR.SM/TI/015.017/10-2020` ke dalam format **A4 Landscape** dengan akurasi dimensi 100% presisi.
+  - Merancang mekanisme *browser auto-detection fallback* (Google Chrome & Microsoft Edge pada sistem operasi Windows).
+  - Menjalankan pengujian fungsional menyeluruh (*End-to-End / Quality Assurance*) terhadap semua skenario alur kerja Petugas dan Assistant Manager.
+  - Menyusun Product Requirement Document (PRD), petunjuk penggunaan (README), dan panduan teknis Handover.
+
+---
+
+### 3.2 Matriks Tanggung Jawab (RACI Matrix)
+
+Matriks RACI mendefinisikan akuntabilitas tim pada setiap modul utama sistem:
+- **R (Responsible)**: Pelaksana teknis pengerjaan modul.
+- **A (Accountable)**: Penanggung jawab akhir dan pengambil keputusan modul.
+- **C (Consulted)**: Pihak yang dimintai masukan teknis dua arah.
+- **I (Informed)**: Pihak yang menerima laporan kemajuan modul.
+
+| Modul & Deliverable Sistem | Nouval | Bagas | Galih | Putra | Ali |
+| :--- | :---: | :---: | :---: | :---: | :---: |
+| **Arsitektur Sistem & Manajemen Repositori Git** | **A / R** | I | C | C | I |
+| **Autentikasi JWT & Otorisasi RBAC Middleware** | **A / R** | C | C | C | I |
+| **Antarmuka SPA & Clean KAI Corporate Theme** | C | **A / R** | I | I | C |
+| **Komponen Interaktif Matriks Form M1-M4** | C | **A / R** | C | I | I |
+| **RESTful API Services & Business Controllers** | C | I | **A / R** | C | I |
+| **Workflow State Machine (Approval / Rejection)**| C | C | **A / R** | C | I |
+| **Perancangan Skema Database MySQL & ORM** | C | I | C | **A / R** | I |
+| **Integritas Relasi Data, Indexing & Data Seeder**| C | I | C | **A / R** | I |
+| **Engine PDF Generator Puppeteer (A4 Landscape)** | C | I | C | I | **A / R** |
+| **Testing, Quality Assurance & Bug Fixing** | C | C | C | C | **A / R** |
+| **Penyusunan PRD Resmi & Panduan Handover** | **A** | C | C | C | **R** |
+
+---
+
+## 4. Arsitektur Sistem & Tech Stack
 
 ```text
 ┌─────────────────────────────────────────────────────────────┐
@@ -212,7 +303,7 @@ stateDiagram-v2
 
 ---
 
-## 4. Skema Database & Kamus Data (MySQL 8.0)
+## 5. Skema Database & Kamus Data (MySQL 8.0)
 
 Nama Database: `monitoring_cctv`
 
@@ -305,7 +396,7 @@ Catatan riwayat persetujuan atau penolakan laporan.
 
 ---
 
-## 5. Spesifikasi RESTful API Endpoints
+## 6. Spesifikasi RESTful API Endpoints
 
 Semua endpoint dilindungi middleware autentikasi JWT kecuali `/api/auth/login`.
 
@@ -334,12 +425,12 @@ Semua endpoint dilindungi middleware autentikasi JWT kecuali `/api/auth/login`.
 
 ---
 
-## 6. Struktur Repositori & File Kunci
+## 7. Struktur Repositori & File Kunci
 
 ```text
 d:/MAGANG DOKUMEN/KAI/monitoring-cctv/
 ├── .gitignore
-├── PROJECT_HANDOVER.md                       # Dokumen PRD & Panduan Handover Proyek
+├── PROJECT_HANDOVER.md                       # Dokumen PRD, Handover & Tim Pengembang
 ├── README.md                                 # Petunjuk Singkat Penggunaan Aplikasi
 ├── Logo_PT_Kereta_Api_Indonesia.webp         # Aset Logo Resmi KAI Resolusi Tinggi
 │
@@ -399,7 +490,7 @@ d:/MAGANG DOKUMEN/KAI/monitoring-cctv/
 
 ---
 
-## 7. Akun Pengujian Bawaan (Default Seeded Users)
+## 8. Akun Pengujian Bawaan (Default Seeded Users)
 
 Aplikasi telah dilengkapi seeder data awal dengan akun kedinasan:
 
@@ -410,7 +501,7 @@ Aplikasi telah dilengkapi seeder data awal dengan akun kedinasan:
 
 ---
 
-## 8. Panduan Instalasi & Menjalankan Aplikasi
+## 9. Panduan Instalasi & Menjalankan Aplikasi
 
 ### Persyaratan Sistem:
 - **Node.js**: Versi 20.x atau 22.x LTS
@@ -463,7 +554,7 @@ npm run dev
 
 ---
 
-## 9. Catatan Teknis, Solusi Kendala & Riwayat Perubahan
+## 10. Catatan Teknis, Solusi Kendala & Riwayat Perubahan
 
 Sepanjang siklus pengembangan dan pengujian, sejumlah penyesuaian penting telah diimplementasikan:
 
