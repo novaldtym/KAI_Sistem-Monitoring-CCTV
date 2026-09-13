@@ -4,6 +4,7 @@
   "description": "Backend API for CCTV Monitoring System - PT KAI",
   "main": "src/app.js",
   "scripts": {
+    "test": "node --test",
     "start": "node src/app.js",
     "dev": "node --watch --watch-path=src src/app.js",
     "seed": "node src/seeders/seed.js"

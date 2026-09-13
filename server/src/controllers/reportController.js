@@ -1,4 +1,5 @@
 const { Op } = require('sequelize');
+const { ownsReport, canReadReport } = require('../policies/reportAccess');
 const { MonitoringReport, MonitoringDetail, CCTVPoint, Station, User, ApprovalLog } = require('../models');
 
 exports.getAll = async (req, res, next) => {
@@ -61,6 +62,10 @@ exports.getById = async (req, res, next) => {
     });
 
     if (!report) return res.status(404).json({ message: 'Laporan tidak ditemukan.' });
+
+    if (!canReadReport(req.user, report)) {
+      return res.status(403).json({ message: 'Anda tidak memiliki akses ke laporan ini.' });
+    }
 
     // Sort details by nomor_urut
     const data = report.toJSON();
@@ -174,6 +179,9 @@ exports.submit = async (req, res, next) => {
   try {
     const report = await MonitoringReport.findByPk(req.params.id);
     if (!report) return res.status(404).json({ message: 'Laporan tidak ditemukan.' });
+    if (!ownsReport(req.user, report)) {
+      return res.status(403).json({ message: 'Anda hanya bisa men-submit laporan milik Anda.' });
+    }
     if (!['draft', 'rejected'].includes(report.status)) {
       return res.status(400).json({ message: 'Laporan ini tidak bisa di-submit.' });
     }

@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const reportController = require('../controllers/reportController');
 const pdfService = require('../services/pdfService');
+const { canReadReport } = require('../policies/reportAccess');
 const { authenticate, authorize } = require('../middleware/auth');
 const { MonitoringReport, MonitoringDetail, CCTVPoint, Station, User, ApprovalLog } = require('../models');
 
@@ -34,6 +35,9 @@ router.get('/:id/pdf', async (req, res, next) => {
     });
 
     if (!report) return res.status(404).json({ message: 'Laporan tidak ditemukan.' });
+    if (!canReadReport(req.user, report)) {
+      return res.status(403).json({ message: 'Anda tidak memiliki akses ke laporan ini.' });
+    }
 
     const pdfBuffer = await pdfService.generateMonitoringPDF(report.toJSON());
     
