@@ -23,7 +23,28 @@ const CCTVPoint = sequelize.define('CCTVPoint', {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
   },
+  merk: {
+    type: DataTypes.STRING(50),
+    allowNull: true,
+  },
+  model_cctv: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+  },
+  jenis: {
+    type: DataTypes.ENUM('dome', 'bullet', 'ptz', 'box', 'lainnya'),
+    allowNull: true,
+  },
+  tipe_lokasi: {
+    type: DataTypes.ENUM('indoor', 'outdoor'),
+    allowNull: true,
+  },
+  resolusi: {
+    type: DataTypes.STRING(20),
+    allowNull: true,
+  }
 }, {
+
   tableName: 'cctv_points',
   indexes: [
     {

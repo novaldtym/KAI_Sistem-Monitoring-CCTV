@@ -62,6 +62,11 @@ export const getCCTVPointsByStationApi = (stationId) => api.get(`/cctv-points/st
 export const createCCTVPointApi = (data) => api.post('/cctv-points', data);
 export const updateCCTVPointApi = (id, data) => api.put(`/cctv-points/${id}`, data);
 export const reorderCCTVPointsApi = (items) => api.patch('/cctv-points/reorder', { items });
+export const importCCTVPointsApi = (formData) => api.post('/cctv-points/import', formData, {
+  headers: {
+    'Content-Type': 'multipart/form-data'
+  }
+});
 export const deleteCCTVPointApi = (id) => api.delete(`/cctv-points/${id}`);
 
 // --- Report APIs ---

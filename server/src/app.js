@@ -43,8 +43,8 @@ async function start() {
     console.log('✅ Database connected successfully.');
 
     // Sync models
-    await sequelize.sync();
-    console.log('✅ Models synced.');
+    await sequelize.sync({ alter: true });
+    console.log('✅ Models synced with alter: true.');
 
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);
