@@ -141,6 +141,15 @@ const ReportFormPage = () => {
     }
   };
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const parseDate = (s) => s ? new Date(s + 'T00:00:00') : null;
+  const m1Locked = tanggalM2 ? today >= parseDate(tanggalM2) : false;
+  const m2Locked = tanggalM3 ? today >= parseDate(tanggalM3) : false;
+  const m3Locked = tanggalM4 ? today >= parseDate(tanggalM4) : false;
+  const m4End = tanggalM4 ? new Date(parseDate(tanggalM4).getTime() + 7 * 86400000) : null;
+  const m4Locked = m4End ? today >= m4End : false;
+
   // Toggle cell status
   const handleToggle = (pointId, field, newVal) => {
     setDetailsMap((prev) => ({
@@ -477,6 +486,7 @@ const ReportFormPage = () => {
                         onChange={(val) =>
                           handleToggle(point.id, "m1_berfungsi", val)
                         }
+                        disabled={m1Locked}
                       />
                     </td>
                     <td>
@@ -485,6 +495,7 @@ const ReportFormPage = () => {
                         onChange={(val) =>
                           handleToggle(point.id, "m1_terbackup", val)
                         }
+                        disabled={m1Locked}
                       />
                     </td>
 
@@ -494,6 +505,7 @@ const ReportFormPage = () => {
                         onChange={(val) =>
                           handleToggle(point.id, "m2_berfungsi", val)
                         }
+                        disabled={m2Locked}
                       />
                     </td>
                     <td>
@@ -502,6 +514,7 @@ const ReportFormPage = () => {
                         onChange={(val) =>
                           handleToggle(point.id, "m2_terbackup", val)
                         }
+                        disabled={m2Locked}
                       />
                     </td>
 
@@ -511,6 +524,7 @@ const ReportFormPage = () => {
                         onChange={(val) =>
                           handleToggle(point.id, "m3_berfungsi", val)
                         }
+                        disabled={m3Locked}
                       />
                     </td>
                     <td>
@@ -519,6 +533,7 @@ const ReportFormPage = () => {
                         onChange={(val) =>
                           handleToggle(point.id, "m3_terbackup", val)
                         }
+                        disabled={m3Locked}
                       />
                     </td>
 
@@ -528,6 +543,7 @@ const ReportFormPage = () => {
                         onChange={(val) =>
                           handleToggle(point.id, "m4_berfungsi", val)
                         }
+                        disabled={m4Locked}
                       />
                     </td>
                     <td>
@@ -536,6 +552,7 @@ const ReportFormPage = () => {
                         onChange={(val) =>
                           handleToggle(point.id, "m4_terbackup", val)
                         }
+                        disabled={m4Locked}
                       />
                     </td>
                   </tr>
