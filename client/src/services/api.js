@@ -49,6 +49,11 @@ export const getPendingCountApi = () => api.get('/dashboard/pending-count');
 export const getStationsApi = () => api.get('/stations');
 export const getStationByIdApi = (id) => api.get(`/stations/${id}`);
 export const createStationApi = (data) => api.post('/stations', data);
+export const importStationsApi = (formData) => api.post('/stations/import', formData, {
+  headers: {
+    'Content-Type': 'multipart/form-data'
+  }
+});
 export const updateStationApi = (id, data) => api.put(`/stations/${id}`, data);
 export const deleteStationApi = (id) => api.delete(`/stations/${id}`);
 
