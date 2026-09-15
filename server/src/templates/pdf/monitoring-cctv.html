@@ -265,14 +265,15 @@
 </head>
 <body>
 
-  <div class="doc-frame">
+  {{#each pages}}
+  <div class="doc-frame" {{#unless isLastPage}}style="page-break-after: always;"{{/unless}}>
     <!-- TOP HEADER BOX TABLE -->
     <table class="header-table">
       <tr>
         <td class="header-left">
           <!-- Official KAI Logo Image -->
-          {{#if kaiLogoBase64}}
-          <img src="{{kaiLogoBase64}}" alt="KAI Logo" style="width: 85px; height: auto; max-height: 32px; display: block; margin: 0 auto 3px; object-fit: contain;" />
+          {{#if ../kaiLogoBase64}}
+          <img src="{{../kaiLogoBase64}}" alt="KAI Logo" style="width: 85px; height: auto; max-height: 32px; display: block; margin: 0 auto 3px; object-fit: contain;" />
           {{else}}
           <div style="font-size: 14pt; font-weight: bold; color: #0D2C6C;">KAI</div>
           {{/if}}
@@ -289,19 +290,19 @@
           <table class="meta-table">
             <tr>
               <td class="meta-label">Nomor</td>
-              <td>: {{nomorDokumen}}</td>
+              <td>: {{../nomorDokumen}}</td>
             </tr>
             <tr>
               <td class="meta-label">Tanggal Terbit</td>
-              <td>: {{tanggalTerbit}}</td>
+              <td>: {{../tanggalTerbit}}</td>
             </tr>
             <tr>
               <td class="meta-label">Versi</td>
-              <td>: {{versi}}</td>
+              <td>: {{../versi}}</td>
             </tr>
             <tr>
               <td class="meta-label">Halaman</td>
-              <td>: 1 dari 1</td>
+              <td>: {{pageNumber}} dari {{totalPages}}</td>
             </tr>
           </table>
         </td>
@@ -313,19 +314,19 @@
       <table class="sub-meta-table">
         <tr>
           <td class="sub-meta-label">No Ref</td>
-          <td>: {{noRef}}</td>
+          <td>: {{../noRef}}</td>
         </tr>
         <tr>
           <td class="sub-meta-label">Tanggal</td>
-          <td>: {{tanggal}}</td>
+          <td>: {{../tanggal}}</td>
         </tr>
         <tr>
           <td class="sub-meta-label">Business Area</td>
-          <td>: {{businessArea}}</td>
+          <td>: {{../businessArea}}</td>
         </tr>
       </table>
 
-      <div class="stasiun-top-label">{{stasiunNama}}</div>
+      <div class="stasiun-top-label">{{../stasiunNama}}</div>
     </div>
 
     <!-- MAIN MONITORING TABLE -->
@@ -335,7 +336,7 @@
         <tr>
           <th rowspan="4" class="col-no">No</th>
           <th class="col-header-label">Bulan</th>
-          <th colspan="8" class="col-header-bulan">{{bulan}}</th>
+          <th colspan="8" class="col-header-bulan">{{../bulan}}</th>
           <th rowspan="4" class="col-note-header">Note</th>
         </tr>
         <!-- Row 2: Minggu | M1 | M2 | M3 | M4 -->
@@ -349,10 +350,10 @@
         <!-- Row 3: Tanggal Pelaksanaan | Tgl 1 | Tgl 2 | Tgl 3 | Tgl 4 -->
         <tr>
           <th class="col-header-label">Tanggal Pelaksanaan</th>
-          <th colspan="2" class="col-date">{{formatDate tanggalM1}}</th>
-          <th colspan="2" class="col-date">{{formatDate tanggalM2}}</th>
-          <th colspan="2" class="col-date">{{formatDate tanggalM3}}</th>
-          <th colspan="2" class="col-date">{{formatDate tanggalM4}}</th>
+          <th colspan="2" class="col-date">{{formatDate ../tanggalM1}}</th>
+          <th colspan="2" class="col-date">{{formatDate ../tanggalM2}}</th>
+          <th colspan="2" class="col-date">{{formatDate ../tanggalM3}}</th>
+          <th colspan="2" class="col-date">{{formatDate ../tanggalM4}}</th>
         </tr>
         <!-- Row 4: Nama Titik CCTV | BERFUNGSI | TERBACKUP x4 -->
         <tr>
@@ -368,7 +369,7 @@
         </tr>
       </thead>
       <tbody>
-        {{#each details}}
+        {{#each items}}
         <tr>
           <td class="col-no">{{this.cctvPoint.nomor_urut}}</td>
           <td class="col-nama">{{this.cctvPoint.nama_titik}}</td>
@@ -391,10 +392,11 @@
       </tbody>
     </table>
 
+    {{#if isLastPage}}
     <!-- CATATAN BOX -->
     <div class="catatan-box">
       <strong>Catatan :</strong>
-      <div style="margin-top: 4px;">{{catatan}}</div>
+      <div style="margin-top: 4px;">{{../catatan}}</div>
     </div>
 
     <!-- FOOTER SECTION (Keterangan & Signatures) -->
@@ -409,11 +411,11 @@
         <div class="sig-box">
           <div class="sig-title">
             Mengetahui,<br>
-            {{managerJabatan}}
+            {{../managerJabatan}}
           </div>
           <div class="sig-bottom">
-            <div class="sig-name">{{managerNama}}</div>
-            <div class="sig-nipp">NIPP. {{managerNipp}}</div>
+            <div class="sig-name">{{../managerNama}}</div>
+            <div class="sig-nipp">NIPP. {{../managerNipp}}</div>
           </div>
         </div>
 
@@ -422,13 +424,15 @@
             Petugas
           </div>
           <div class="sig-bottom">
-            <div class="sig-name">{{petugasNama}}</div>
-            <div class="sig-nipp">NIPP. {{petugasNipp}}</div>
+            <div class="sig-name">{{../petugasNama}}</div>
+            <div class="sig-nipp">NIPP. {{../petugasNipp}}</div>
           </div>
         </div>
       </div>
     </div>
+    {{/if}}
   </div>
+  {{/each}}
 
 </body>
 </html>

@@ -50,6 +50,24 @@ async function generateMonitoringPDF(reportData) {
 
   const approvalLog = reportData.approvalLogs && reportData.approvalLogs[0];
 
+  const chunks = [];
+  for (let i = 0; i < details.length; i += 20) {
+    chunks.push(details.slice(i, i + 20));
+  }
+
+  const totalPages = chunks.length || 1;
+  const pages = chunks.length ? chunks.map((chunk, index) => ({
+    pageNumber: index + 1,
+    totalPages,
+    isLastPage: index === totalPages - 1,
+    items: chunk
+  })) : [{
+    pageNumber: 1,
+    totalPages: 1,
+    isLastPage: true,
+    items: []
+  }];
+
   const html = template({
     kaiLogoBase64,
     noRef: reportData.no_ref || '-',
@@ -64,7 +82,7 @@ async function generateMonitoringPDF(reportData) {
     tanggalM2: reportData.tanggal_m2,
     tanggalM3: reportData.tanggal_m3,
     tanggalM4: reportData.tanggal_m4,
-    details,
+    pages,
     catatan: reportData.catatan || '',
     managerNama: approvalLog?.approver?.nama || '-',
     managerNipp: approvalLog?.approver?.nipp || '-',

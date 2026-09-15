@@ -42,6 +42,10 @@ const ReportFormPage = () => {
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
 
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 20;
+
   // Fetch stations on load
   useEffect(() => {
     getStationsApi().then((res) => setStations(res.data.data));
@@ -121,6 +125,7 @@ const ReportFormPage = () => {
       setTanggalM2("");
       setTanggalM3("");
       setTanggalM4("");
+      setCurrentPage(1);
       return;
     }
 
@@ -130,6 +135,7 @@ const ReportFormPage = () => {
       const res = await getCCTVPointsByStationApi(stationId);
       const points = res.data.data;
       setCctvPoints(points);
+      setCurrentPage(1);
 
       const map = {};
       points.forEach((p) => {
@@ -163,6 +169,12 @@ const ReportFormPage = () => {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
   })();
+
+  const totalPages = Math.ceil(cctvPoints.length / itemsPerPage) || 1;
+  const paginatedPoints = cctvPoints.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  const handlePrevPage = () => setCurrentPage((p) => Math.max(1, p - 1));
+  const handleNextPage = () => setCurrentPage((p) => Math.min(totalPages, p + 1));
 
   // Toggle cell status
   const handleToggle = (pointId, field, newVal) => {
@@ -510,7 +522,7 @@ const ReportFormPage = () => {
               </tr>
             </thead>
             <tbody>
-              {cctvPoints.map((point) => {
+              {paginatedPoints.map((point) => {
                 const detail = detailsMap[point.id] || {};
                 return (
                   <tr key={point.id}>
@@ -597,6 +609,30 @@ const ReportFormPage = () => {
               })}
             </tbody>
           </table>
+
+          {totalPages > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: '16px', gap: '12px' }}>
+              <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                Halaman {currentPage} dari {totalPages}
+              </span>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button 
+                  className="btn btn-secondary btn-sm" 
+                  onClick={handlePrevPage} 
+                  disabled={currentPage === 1}
+                >
+                  Sebelumnya
+                </button>
+                <button 
+                  className="btn btn-secondary btn-sm" 
+                  onClick={handleNextPage} 
+                  disabled={currentPage === totalPages}
+                >
+                  Berikutnya
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         <div className="card empty-state">
