@@ -33,6 +33,11 @@ const ReportFormPage = () => {
   const [detailsMap, setDetailsMap] = useState({}); // { [cctvPointId]: { m1_berfungsi, m1_terbackup, ... } }
   const [reportStatus, setReportStatus] = useState("draft");
 
+  const [checkedAtM1, setCheckedAtM1] = useState(null);
+  const [checkedAtM2, setCheckedAtM2] = useState(null);
+  const [checkedAtM3, setCheckedAtM3] = useState(null);
+  const [checkedAtM4, setCheckedAtM4] = useState(null);
+
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
@@ -62,6 +67,10 @@ const ReportFormPage = () => {
           setNoRef(r.no_ref || "");
           setCatatan(r.catatan || "");
           setReportStatus(r.status);
+          setCheckedAtM1(r.checked_at_m1 || null);
+          setCheckedAtM2(r.checked_at_m2 || null);
+          setCheckedAtM3(r.checked_at_m3 || null);
+          setCheckedAtM4(r.checked_at_m4 || null);
 
           const map = {};
           (r.details || []).forEach((d) => {
@@ -150,6 +159,11 @@ const ReportFormPage = () => {
   const m4End = tanggalM4 ? new Date(parseDate(tanggalM4).getTime() + 7 * 86400000) : null;
   const m4Locked = m4End ? today >= m4End : false;
 
+  const todayStr = (() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  })();
+
   // Toggle cell status
   const handleToggle = (pointId, field, newVal) => {
     setDetailsMap((prev) => ({
@@ -159,6 +173,11 @@ const ReportFormPage = () => {
         [field]: newVal,
       },
     }));
+
+    if (field.startsWith('m1_')) setCheckedAtM1(todayStr);
+    else if (field.startsWith('m2_')) setCheckedAtM2(todayStr);
+    else if (field.startsWith('m3_')) setCheckedAtM3(todayStr);
+    else if (field.startsWith('m4_')) setCheckedAtM4(todayStr);
   };
 
   // Helper to build payload
@@ -177,6 +196,10 @@ const ReportFormPage = () => {
       tanggal_m2: tanggalM2 || null,
       tanggal_m3: tanggalM3 || null,
       tanggal_m4: tanggalM4 || null,
+      checked_at_m1: checkedAtM1 || null,
+      checked_at_m2: checkedAtM2 || null,
+      checked_at_m3: checkedAtM3 || null,
+      checked_at_m4: checkedAtM4 || null,
       catatan,
       details,
     };
@@ -450,16 +473,30 @@ const ReportFormPage = () => {
           <table>
             <thead>
               <tr>
-                <th rowSpan="2" style={{ width: "40px" }}>
+                <th rowSpan="3" style={{ width: "40px" }}>
                   No
                 </th>
-                <th rowSpan="2" className="col-nama">
+                <th rowSpan="3" className="col-nama">
                   Nama Titik CCTV
                 </th>
                 <th colSpan="2">M1 {tanggalM1 && `(${tanggalM1})`}</th>
                 <th colSpan="2">M2 {tanggalM2 && `(${tanggalM2})`}</th>
                 <th colSpan="2">M3 {tanggalM3 && `(${tanggalM3})`}</th>
                 <th colSpan="2">M4 {tanggalM4 && `(${tanggalM4})`}</th>
+              </tr>
+              <tr>
+                <th colSpan="2" style={{ fontSize: '10px', fontWeight: '400', color: checkedAtM1 ? 'var(--status-success)' : 'var(--text-muted)', padding: '2px 4px' }}>
+                  {checkedAtM1 ? `Diperiksa: ${checkedAtM1}` : 'Belum diperiksa'}
+                </th>
+                <th colSpan="2" style={{ fontSize: '10px', fontWeight: '400', color: checkedAtM2 ? 'var(--status-success)' : 'var(--text-muted)', padding: '2px 4px' }}>
+                  {checkedAtM2 ? `Diperiksa: ${checkedAtM2}` : 'Belum diperiksa'}
+                </th>
+                <th colSpan="2" style={{ fontSize: '10px', fontWeight: '400', color: checkedAtM3 ? 'var(--status-success)' : 'var(--text-muted)', padding: '2px 4px' }}>
+                  {checkedAtM3 ? `Diperiksa: ${checkedAtM3}` : 'Belum diperiksa'}
+                </th>
+                <th colSpan="2" style={{ fontSize: '10px', fontWeight: '400', color: checkedAtM4 ? 'var(--status-success)' : 'var(--text-muted)', padding: '2px 4px' }}>
+                  {checkedAtM4 ? `Diperiksa: ${checkedAtM4}` : 'Belum diperiksa'}
+                </th>
               </tr>
               <tr>
                 <th style={{ width: "70px" }}>Berfungsi</th>

@@ -34,6 +34,18 @@ const MonitoringReport = sequelize.define('MonitoringReport', {
   tanggal_m4: {
     type: DataTypes.DATEONLY,
   },
+  checked_at_m1: {
+    type: DataTypes.DATEONLY,
+  },
+  checked_at_m2: {
+    type: DataTypes.DATEONLY,
+  },
+  checked_at_m3: {
+    type: DataTypes.DATEONLY,
+  },
+  checked_at_m4: {
+    type: DataTypes.DATEONLY,
+  },
   catatan: {
     type: DataTypes.TEXT,
   },

@@ -83,7 +83,7 @@ exports.getById = async (req, res, next) => {
 
 exports.create = async (req, res, next) => {
   try {
-    const { station_id, bulan, tahun, no_ref, tanggal_m1, tanggal_m2, tanggal_m3, tanggal_m4, catatan, details } = req.body;
+    const { station_id, bulan, tahun, no_ref, tanggal_m1, tanggal_m2, tanggal_m3, tanggal_m4, checked_at_m1, checked_at_m2, checked_at_m3, checked_at_m4, catatan, details } = req.body;
 
     // Check duplicate
     const existing = await MonitoringReport.findOne({ where: { station_id, bulan, tahun } });
@@ -94,6 +94,7 @@ exports.create = async (req, res, next) => {
     // Create report
     const report = await MonitoringReport.create({
       station_id, bulan, tahun, no_ref, tanggal_m1, tanggal_m2, tanggal_m3, tanggal_m4,
+      checked_at_m1, checked_at_m2, checked_at_m3, checked_at_m4,
       catatan, status: 'draft', created_by: req.user.id,
     });
 
@@ -153,8 +154,8 @@ exports.update = async (req, res, next) => {
       return res.status(403).json({ message: 'Anda hanya bisa mengedit laporan milik Anda.' });
     }
 
-    const { no_ref, tanggal_m1, tanggal_m2, tanggal_m3, tanggal_m4, catatan, details } = req.body;
-    await report.update({ no_ref, tanggal_m1, tanggal_m2, tanggal_m3, tanggal_m4, catatan });
+    const { no_ref, tanggal_m1, tanggal_m2, tanggal_m3, tanggal_m4, checked_at_m1, checked_at_m2, checked_at_m3, checked_at_m4, catatan, details } = req.body;
+    await report.update({ no_ref, tanggal_m1, tanggal_m2, tanggal_m3, tanggal_m4, checked_at_m1, checked_at_m2, checked_at_m3, checked_at_m4, catatan });
 
     // Update details
     if (details && details.length > 0) {
