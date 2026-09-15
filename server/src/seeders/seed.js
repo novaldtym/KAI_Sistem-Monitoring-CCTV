@@ -33,6 +33,7 @@ async function seed() {
       nama_stasiun: 'Stasiun Lempuyangan',
       business_area: 'B060',
       kode_stasiun: 'LPN',
+      hari_mulai_m1: 5,
     });
 
     // === CCTV POINTS ===

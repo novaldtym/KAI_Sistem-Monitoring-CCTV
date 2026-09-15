@@ -18,6 +18,11 @@ const Station = sequelize.define('Station', {
   kode_stasiun: {
     type: DataTypes.STRING(10),
   },
+  hari_mulai_m1: {
+    type: DataTypes.INTEGER,
+    defaultValue: 1,
+    validate: { min: 1, max: 28 },
+  },
   is_active: {
     type: DataTypes.BOOLEAN,
     defaultValue: true,

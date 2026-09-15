@@ -18,6 +18,7 @@ const StationMasterPage = () => {
   const [namaStasiun, setNamaStasiun] = useState('');
   const [businessArea, setBusinessArea] = useState('');
   const [kodeStasiun, setKodeStasiun] = useState('');
+  const [hariMulaiM1, setHariMulaiM1] = useState(1);
 
   const fetchStations = () => {
     setLoading(true);
@@ -36,6 +37,7 @@ const StationMasterPage = () => {
     setNamaStasiun('');
     setBusinessArea('B060');
     setKodeStasiun('');
+    setHariMulaiM1(1);
     setShowModal(true);
   };
 
@@ -44,6 +46,7 @@ const StationMasterPage = () => {
     setNamaStasiun(st.nama_stasiun);
     setBusinessArea(st.business_area);
     setKodeStasiun(st.kode_stasiun || '');
+    setHariMulaiM1(st.hari_mulai_m1 || 1);
     setShowModal(true);
   };
 
@@ -55,6 +58,7 @@ const StationMasterPage = () => {
           nama_stasiun: namaStasiun,
           business_area: businessArea,
           kode_stasiun: kodeStasiun,
+          hari_mulai_m1: parseInt(hariMulaiM1),
         });
         toast.success('Stasiun diperbarui.');
       } else {
@@ -62,6 +66,7 @@ const StationMasterPage = () => {
           nama_stasiun: namaStasiun,
           business_area: businessArea,
           kode_stasiun: kodeStasiun,
+          hari_mulai_m1: parseInt(hariMulaiM1),
         });
         toast.success('Stasiun ditambahkan.');
       }
@@ -105,6 +110,7 @@ const StationMasterPage = () => {
                 <th>Business Area</th>
                 <th>Nama Stasiun</th>
                 <th>Kode Stasiun</th>
+                <th>Hari Mulai M1</th>
                 <th>Jumlah CCTV</th>
                 <th style={{ textAlign: 'center', width: '120px' }}>Aksi</th>
               </tr>
@@ -115,6 +121,7 @@ const StationMasterPage = () => {
                   <td style={{ fontWeight: '700', color: 'var(--kai-orange)' }}>{st.business_area}</td>
                   <td>{st.nama_stasiun}</td>
                   <td>{st.kode_stasiun || '-'}</td>
+                  <td>Tanggal {st.hari_mulai_m1 || 1}</td>
                   <td>{st.cctvPoints?.length || 0} Titik</td>
                   <td style={{ textAlign: 'center' }}>
                     <button
@@ -182,6 +189,22 @@ const StationMasterPage = () => {
                   value={kodeStasiun}
                   onChange={(e) => setKodeStasiun(e.target.value)}
                 />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Hari Mulai M1 (tanggal 1-28)</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  min="1"
+                  max="28"
+                  value={hariMulaiM1}
+                  onChange={(e) => setHariMulaiM1(e.target.value)}
+                  required
+                />
+                <small style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
+                  M2 = M1+7 hari, M3 = M1+14 hari, M4 = M1+21 hari
+                </small>
               </div>
 
               <div className="modal-actions">

@@ -27,8 +27,8 @@ exports.getById = async (req, res, next) => {
 
 exports.create = async (req, res, next) => {
   try {
-    const { nama_stasiun, business_area, kode_stasiun } = req.body;
-    const station = await Station.create({ nama_stasiun, business_area, kode_stasiun });
+    const { nama_stasiun, business_area, kode_stasiun, hari_mulai_m1 } = req.body;
+    const station = await Station.create({ nama_stasiun, business_area, kode_stasiun, hari_mulai_m1 });
     res.status(201).json({ message: 'Stasiun berhasil ditambahkan.', data: station });
   } catch (error) {
     next(error);
@@ -40,8 +40,8 @@ exports.update = async (req, res, next) => {
     const station = await Station.findByPk(req.params.id);
     if (!station) return res.status(404).json({ message: 'Stasiun tidak ditemukan.' });
     
-    const { nama_stasiun, business_area, kode_stasiun } = req.body;
-    await station.update({ nama_stasiun, business_area, kode_stasiun });
+    const { nama_stasiun, business_area, kode_stasiun, hari_mulai_m1 } = req.body;
+    await station.update({ nama_stasiun, business_area, kode_stasiun, hari_mulai_m1 });
     res.json({ message: 'Stasiun berhasil diupdate.', data: station });
   } catch (error) {
     next(error);
