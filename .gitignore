@@ -41,3 +41,6 @@ server/pdf_exact_preview.png
 
 # Local documentation
 /docs/
+
+# Local data files
+/data/

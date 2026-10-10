@@ -129,8 +129,6 @@ Sistem sudah dilengkapi 2 akun untuk pengujian role:
    - Memuat header logo KAI, metadata No Ref/Nomor/Versi, tabel empat atau lima minggu sesuai kalender, catatan, serta blok tanda tangan NIPP Asst. Manager & Petugas.
 5. **Master Data Management**: CRUD Stasiun dan Titik CCTV per stasiun.
 
-File pendataan CCTV September 2026 dengan kolom Kode Stasiun tersedia di [folder data](<data/Form_Pendataan_CCTV_KAI_Enhanced_Daop 6_092026-rev1.xlsx>). Gunakan sheet **Form Pendataan CCTV** melalui menu **Impor Excel KAI**.
-
 ---
 
 ## 👥 Tim Pengembang (Development Team)
