@@ -38,3 +38,6 @@ Thumbs.db
 # Temporary test & generated output files
 server/*.pdf
 server/pdf_exact_preview.png
+
+# Local documentation
+/docs/

@@ -121,7 +121,6 @@ Sistem sudah dilengkapi 2 akun untuk pengujian role:
    - M1 dimulai pada Senin pertama bulan laporan; setiap minggu berjalan Senin–Minggu, termasuk jika berakhir pada bulan berikutnya.
    - Pengisian hanya pada minggu berjalan menurut waktu server WIB. Simpan Draft untuk melanjutkan minggu berikutnya.
    - No. Ref otomatis saat draft pertama disimpan, berurutan untuk semua stasiun dalam bulan/tahun laporan dan mulai lagi dari 01 pada periode berikutnya.
-   - Aturan rentang, tanggal pemeriksaan, dan data lama dijelaskan pada [pemeriksaan mingguan](docs/pemeriksaan-mingguan.md).
 3. **Approval Workflow**:
    - Status transition: `Draft` → `Submitted` → `Approved` / `Rejected`
    - Log riwayat approval lengkap dengan catatan komentar penolakan.
@@ -130,7 +129,7 @@ Sistem sudah dilengkapi 2 akun untuk pengujian role:
    - Memuat header logo KAI, metadata No Ref/Nomor/Versi, tabel empat atau lima minggu sesuai kalender, catatan, serta blok tanda tangan NIPP Asst. Manager & Petugas.
 5. **Master Data Management**: CRUD Stasiun dan Titik CCTV per stasiun.
 
-File pendataan CCTV September 2026 dengan kolom Kode Stasiun tersedia di [folder data](<data/Form_Pendataan_CCTV_KAI_Enhanced_Daop 6_092026-rev1.xlsx>). Gunakan sheet **Form Pendataan CCTV** melalui menu **Impor Excel KAI**; panduan ada pada [impor Excel](docs/import-excel-kai.md).
+File pendataan CCTV September 2026 dengan kolom Kode Stasiun tersedia di [folder data](<data/Form_Pendataan_CCTV_KAI_Enhanced_Daop 6_092026-rev1.xlsx>). Gunakan sheet **Form Pendataan CCTV** melalui menu **Impor Excel KAI**.
 
 ---
 
