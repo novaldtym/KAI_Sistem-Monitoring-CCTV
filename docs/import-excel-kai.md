@@ -2,6 +2,8 @@
 
 Login sebagai Assistant Manager, buka **Master Stasiun** atau **Master CCTV**, lalu pilih **Impor Excel KAI**. Pilih file `.xlsx`/`.xls` dan klik **Buat Pratinjau**. Jika tidak ada kesalahan, klik **Simpan Hasil Impor**.
 
+File pendataan September 2026 yang sudah memiliki kolom **Kode Stasiun** tersedia di [folder data repo](<../data/Form_Pendataan_CCTV_KAI_Enhanced_Daop 6_092026-rev1.xlsx>).
+
 Impor membaca sheet **Form Pendataan CCTV**, mencari header pada 30 baris pertama, dan hanya mengambil baris dengan wilayah **Daop 6 Yogyakarta** serta Nama Lokasi yang diawali **Stasiun**. Sheet petunjuk, lokasi depo/kantor/lokomotif, dan wilayah lain tidak diimpor. Batas unggahan 10 MB.
 
 | Kolom sumber | Data aplikasi |
