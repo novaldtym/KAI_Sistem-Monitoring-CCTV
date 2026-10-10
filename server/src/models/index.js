@@ -5,6 +5,7 @@ const CCTVPoint = require('./CCTVPoint');
 const MonitoringReport = require('./MonitoringReport');
 const MonitoringDetail = require('./MonitoringDetail');
 const ApprovalLog = require('./ApprovalLog');
+const ReportReferenceCounter = require('./ReportReferenceCounter');
 
 // --- Associations ---
 
@@ -13,8 +14,8 @@ Station.hasMany(CCTVPoint, { foreignKey: 'station_id', as: 'cctvPoints' });
 CCTVPoint.belongsTo(Station, { foreignKey: 'station_id', as: 'station' });
 
 // Station <-> MonitoringReport
-Station.hasMany(MonitoringReport, { foreignKey: 'station_id', as: 'reports' });
-MonitoringReport.belongsTo(Station, { foreignKey: 'station_id', as: 'station' });
+Station.hasMany(MonitoringReport, { foreignKey: 'station_id', as: 'reports', onDelete: 'RESTRICT' });
+MonitoringReport.belongsTo(Station, { foreignKey: 'station_id', as: 'station', onDelete: 'RESTRICT' });
 
 // User (Petugas) <-> MonitoringReport
 User.hasMany(MonitoringReport, { foreignKey: 'created_by', as: 'reports' });
@@ -25,8 +26,8 @@ MonitoringReport.hasMany(MonitoringDetail, { foreignKey: 'report_id', as: 'detai
 MonitoringDetail.belongsTo(MonitoringReport, { foreignKey: 'report_id', as: 'report' });
 
 // CCTVPoint <-> MonitoringDetail
-CCTVPoint.hasMany(MonitoringDetail, { foreignKey: 'cctv_point_id', as: 'monitoringDetails' });
-MonitoringDetail.belongsTo(CCTVPoint, { foreignKey: 'cctv_point_id', as: 'cctvPoint' });
+CCTVPoint.hasMany(MonitoringDetail, { foreignKey: 'cctv_point_id', as: 'monitoringDetails', onDelete: 'RESTRICT' });
+MonitoringDetail.belongsTo(CCTVPoint, { foreignKey: 'cctv_point_id', as: 'cctvPoint', onDelete: 'RESTRICT' });
 
 // MonitoringReport <-> ApprovalLog
 MonitoringReport.hasMany(ApprovalLog, { foreignKey: 'report_id', as: 'approvalLogs' });
@@ -44,4 +45,5 @@ module.exports = {
   MonitoringReport,
   MonitoringDetail,
   ApprovalLog,
+  ReportReferenceCounter,
 };

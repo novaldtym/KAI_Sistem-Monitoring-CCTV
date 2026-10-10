@@ -1,0 +1,86 @@
+.inspection-map { margin-top: 24px; }
+.inspection-map-header, .inspection-map-summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+}
+.inspection-map-header h2 { font-size: 18px; font-weight: 700; color: var(--kai-blue-dark); }
+.inspection-map-header p, .inspection-map-explanation, .inspection-map-hint {
+  font-size: 13px; color: var(--text-secondary);
+}
+.inspection-map-controls { display: flex; align-items: flex-end; gap: 10px; }
+.inspection-map-controls label { font-size: 12px; font-weight: 600; color: var(--text-secondary); }
+.inspection-map-controls input { display: block; margin-top: 4px; min-width: 185px; }
+.inspection-map button:disabled { opacity: .55; cursor: not-allowed; }
+.inspection-map-weeks { display: flex; flex-wrap: wrap; gap: 6px; margin: 20px 0; }
+.inspection-map-weeks button {
+  border: 1px solid var(--border-color); border-radius: 6px; background: white;
+  padding: 9px 12px; min-height: 44px; font: inherit; font-size: 13px;
+  font-weight: 600; color: var(--text-secondary); cursor: pointer;
+}
+.inspection-map-weeks button span { margin-left: 5px; font-size: 12px; font-weight: 400; }
+.inspection-map-weeks button.active { background: var(--kai-blue); border-color: var(--kai-blue); color: white; }
+.inspection-map-weeks button:hover:not(:disabled):not(.active) { background: var(--bg-primary); border-color: var(--border-light); }
+.inspection-map-summary { border-top: 1px solid var(--border-color); padding-top: 16px; font-size: 13px; }
+.inspection-map-legend { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.inspection-map-legend span { display: inline-flex; align-items: center; gap: 7px; }
+.inspection-dot {
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 20px; height: 20px; border-radius: 50%; font-style: normal; font-weight: 700; font-size: 13px;
+}
+.inspection-dot.complete { background: #15803d; color: white; }
+.inspection-dot.incomplete { background: #b91c1c; color: white; }
+.inspection-dot.no-groups, .inspection-dot.scheduled { border: 2px solid #64748b; color: #475569; background: white; }
+.inspection-map-explanation { margin-top: 9px; }
+.inspection-map-canvas { overflow-x: auto; margin: 8px 0 16px; }
+.inspection-map-canvas svg { display: block; width: 100%; min-width: 1180px; max-width: 1440px; margin: auto; }
+.inspection-tracks path { fill: none; stroke-linejoin: round; }
+.inspection-tracks .double-track { stroke: #94a3b8; stroke-width: 9px; }
+.inspection-tracks .track-center { stroke: white; stroke-width: 4px; }
+.inspection-tracks .single-track { stroke: #94a3b8; stroke-width: 3px; }
+.inspection-tracks text { font-size: 12px; font-weight: 500; fill: #475569; letter-spacing: .4px; }
+.inspection-station { cursor: pointer; }
+.inspection-station .station-circle { stroke-width: 2px; }
+.inspection-station.complete .station-circle { fill: #15803d; stroke: #166534; }
+.inspection-station.incomplete .station-circle { fill: #b91c1c; stroke: #991b1b; }
+.inspection-station.no-groups .station-circle, .inspection-station.scheduled .station-circle { fill: white; stroke: #64748b; }
+.station-code { font-size: 14px; font-weight: 700; fill: white; }
+.inspection-station.no-groups .station-code, .inspection-station.scheduled .station-code { fill: #475569; }
+.station-state { font-size: 13px; font-weight: 700; fill: white; }
+.inspection-station.no-groups .station-state, .inspection-station.scheduled .station-state { fill: #475569; }
+.station-focus-ring { fill: transparent; stroke: transparent; stroke-width: 2px; }
+.inspection-station:hover .station-focus-ring, .inspection-station:focus-visible .station-focus-ring,
+.inspection-station.selected .station-focus-ring { stroke: var(--kai-blue); }
+.inspection-map :focus-visible { outline: 2px solid var(--kai-blue); outline-offset: 3px; }
+.inspection-station:focus-visible { outline: none; }
+.station-inspection-dialog {
+  position: fixed; inset: 0; margin: auto; width: min(680px, calc(100vw - 32px));
+  max-height: calc(100dvh - 48px); overflow-y: auto; padding: 24px;
+  border: 1px solid var(--border-color); border-radius: var(--radius-lg);
+  background: var(--bg-card); color: var(--text-primary); box-shadow: var(--shadow-lg); font-family: inherit;
+}
+.station-inspection-dialog::backdrop { background: rgba(15, 23, 42, .5); }
+.station-inspection-dialog-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.station-inspection-dialog-header h3 { font-size: 18px; font-weight: 700; color: var(--kai-blue-dark); }
+.station-inspection-dialog p { font-size: 13px; color: var(--text-secondary); }
+.station-inspection-dialog-header p { margin-top: 4px; }
+.station-inspection-dialog .btn-icon { width: 44px; height: 44px; flex-shrink: 0; }
+.station-inspection-dialog :focus-visible { outline: 2px solid var(--kai-blue); outline-offset: 3px; }
+.station-inspection-dialog-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+.inspection-map-detail-weeks { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-top: 20px; }
+.inspection-map-detail-weeks span { display: flex; flex-direction: column; color: var(--text-secondary); font-size: 13px; }
+.inspection-map-detail-weeks strong { color: var(--text-primary); margin-bottom: 2px; }
+.inspection-map-footnote { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; margin-top: 14px; font-size: 12px; color: var(--text-secondary); }
+.inspection-map-footnote span { display: flex; align-items: center; gap: 7px; }
+.inspection-track-key { display: inline-block; width: 24px; height: 2px; background: #64748b; }
+.inspection-track-key.double { height: 6px; border-top: 2px solid #64748b; border-bottom: 2px solid #64748b; background: none; }
+.inspection-map-unmapped { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.inspection-map-unmapped p { flex-basis: 100%; font-size: 13px; font-weight: 600; }
+.inspection-map-message { padding: 48px 12px; text-align: center; font-size: 14px; color: var(--text-secondary); }
+.inspection-map-error { color: var(--status-danger); }
+@media (max-width: 700px) {
+  .inspection-map-header { align-items: flex-start; }
+  .inspection-map-controls { width: 100%; flex-wrap: wrap; }
+  .inspection-map-controls label { flex: 1; }
+  .inspection-map-controls input { min-width: 0; }
+  .inspection-map-weeks button { flex: 1 0 30%; }
+  .inspection-map-legend { width: 100%; }
+}

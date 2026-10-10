@@ -1,9 +1,9 @@
-import React from 'react';
-
-const StatusToggle = ({ value, onChange, disabled = false }) => {
+const StatusToggle = ({ value, onChange, disabled = false, locked = false,
+  lockReason = 'Pengisian tidak tersedia untuk minggu ini.', label: fieldLabel = 'Status pemeriksaan' }) => {
+  const isDisabled = disabled || locked;
   // Cycle order: '-' -> 'V' -> 'X' -> '-'
   const handleClick = () => {
-    if (disabled) return;
+    if (isDisabled) return;
     let nextVal = '-';
     if (value === '-') nextVal = 'V';
     else if (value === 'V') nextVal = 'X';
@@ -21,16 +21,19 @@ const StatusToggle = ({ value, onChange, disabled = false }) => {
     className = 'status-toggle status-x';
     label = '✗';
   }
+  const description = `${fieldLabel}: ${value === 'V' ? 'Ya' : value === 'X' ? 'Tidak' : 'Belum diisi'}`;
+  const accessibleLabel = locked ? `${description}. Terkunci: ${lockReason}` : description;
 
   return (
     <button
       type="button"
       className={className}
       onClick={handleClick}
-      disabled={disabled}
-      title={value === 'V' ? 'Berfungsi (Ya)' : value === 'X' ? 'Tidak Berfungsi (Tidak)' : 'Belum diisi'}
+      disabled={isDisabled}
+      aria-label={accessibleLabel}
+      title={accessibleLabel}
     >
-      {label}
+      <span aria-hidden="true">{label}</span>
     </button>
   );
 };

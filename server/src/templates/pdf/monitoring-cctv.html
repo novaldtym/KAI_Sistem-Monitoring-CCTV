@@ -92,7 +92,7 @@
       width: 90px;
     }
 
-    /* === SUB META TABLE (No Ref, Tanggal, Business Area) === */
+    /* === SUB META TABLE (No Ref, Tanggal) === */
     .meta-stasiun-container {
       display: flex;
       justify-content: space-between;
@@ -133,6 +133,7 @@
       text-align: center;
       vertical-align: middle;
     }
+    .main-table tr { break-inside: avoid; }
     .main-table th {
       font-weight: bold;
       background-color: #d9d9d9;
@@ -160,9 +161,8 @@
       padding-left: 6px !important;
       font-size: 7.5pt;
       width: 240px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      white-space: normal;
+      overflow-wrap: anywhere;
     }
     
     .col-header-bulan {
@@ -190,18 +190,18 @@
       text-align: center;
       padding: 2px 0 !important;
       letter-spacing: -0.2px;
-      width: 65px;
+      width: 55px;
     }
 
     .col-note-header {
-      width: 100px;
+      width: 65px;
       font-size: 8pt;
       font-weight: bold;
       text-align: center;
     }
 
     .col-note-cell {
-      width: 100px;
+      width: 65px;
     }
 
     .status-cell {
@@ -209,7 +209,7 @@
       font-weight: bold;
       text-align: center;
       vertical-align: middle;
-      width: 65px;
+      width: 55px;
     }
 
     /* === CATATAN BOX === */
@@ -309,7 +309,7 @@
       </tr>
     </table>
 
-    <!-- SUB META TABLE (No Ref, Tanggal, Business Area) & STASIUN LABEL -->
+    <!-- SUB META TABLE (No Ref, Tanggal) & STASIUN LABEL -->
     <div class="meta-stasiun-container">
       <table class="sub-meta-table">
         <tr>
@@ -320,10 +320,6 @@
           <td class="sub-meta-label">Tanggal</td>
           <td>: {{../tanggal}}</td>
         </tr>
-        <tr>
-          <td class="sub-meta-label">Business Area</td>
-          <td>: {{../businessArea}}</td>
-        </tr>
       </table>
 
       <div class="stasiun-top-label">{{../stasiunNama}}</div>
@@ -332,60 +328,35 @@
     <!-- MAIN MONITORING TABLE -->
     <table class="main-table">
       <thead>
-        <!-- Row 1: No | Bulan | 01-Des-25 (colspan 8) | Note (rowspan 4) -->
         <tr>
-          <th rowspan="4" class="col-no">No</th>
+          <th rowspan="5" class="col-no">No</th>
           <th class="col-header-label">Bulan</th>
-          <th colspan="8" class="col-header-bulan">{{../bulan}}</th>
-          <th rowspan="4" class="col-note-header">Note</th>
+          <th colspan="{{../statusColumnCount}}" class="col-header-bulan">{{../bulan}}</th>
+          <th rowspan="5" class="col-note-header">Note</th>
         </tr>
-        <!-- Row 2: Minggu | M1 | M2 | M3 | M4 -->
         <tr>
           <th class="col-header-label">Minggu</th>
-          <th colspan="2" class="col-minggu">M1</th>
-          <th colspan="2" class="col-minggu">M2</th>
-          <th colspan="2" class="col-minggu">M3</th>
-          <th colspan="2" class="col-minggu">M4</th>
+          {{#each ../weeks}}<th colspan="2" class="col-minggu">{{label}}</th>{{/each}}
         </tr>
-        <!-- Row 3: Tanggal Pelaksanaan | Tgl 1 | Tgl 2 | Tgl 3 | Tgl 4 -->
         <tr>
-          <th class="col-header-label">Tanggal Pelaksanaan</th>
-          <th colspan="2" class="col-date">{{formatDate ../tanggalM1}}</th>
-          <th colspan="2" class="col-date">{{formatDate ../tanggalM2}}</th>
-          <th colspan="2" class="col-date">{{formatDate ../tanggalM3}}</th>
-          <th colspan="2" class="col-date">{{formatDate ../tanggalM4}}</th>
+          <th class="col-header-label">Rentang Tanggal</th>
+          {{#each ../weeks}}<th colspan="2" class="col-date">{{range}}</th>{{/each}}
         </tr>
-        <!-- Row 4: Nama Titik CCTV | BERFUNGSI | TERBACKUP x4 -->
         <tr>
-          <th class="col-nama-header">Nama Titik CCTV</th>
-          <th class="col-status-header">BERFUNGSI</th>
-          <th class="col-status-header">TERBACKUP</th>
-          <th class="col-status-header">BERFUNGSI</th>
-          <th class="col-status-header">TERBACKUP</th>
-          <th class="col-status-header">BERFUNGSI</th>
-          <th class="col-status-header">TERBACKUP</th>
-          <th class="col-status-header">BERFUNGSI</th>
-          <th class="col-status-header">TERBACKUP</th>
+          <th class="col-header-label">Terakhir Diisi (WIB)</th>
+          {{#each ../weeks}}<th colspan="2" class="col-date">{{formatDate checkedAt}}</th>{{/each}}
+        </tr>
+        <tr>
+          <th class="col-nama-header">Penempatan / Objek Pantau</th>
+          {{#each ../weeks}}<th class="col-status-header">BERFUNGSI</th><th class="col-status-header">TERBACKUP</th>{{/each}}
         </tr>
       </thead>
       <tbody>
         {{#each items}}
         <tr>
           <td class="col-no">{{this.cctvPoint.nomor_urut}}</td>
-          <td class="col-nama">{{this.cctvPoint.nama_titik}}</td>
-
-          <td class="status-cell">{{statusSymbol this.m1_berfungsi}}</td>
-          <td class="status-cell">{{statusSymbol this.m1_terbackup}}</td>
-
-          <td class="status-cell">{{statusSymbol this.m2_berfungsi}}</td>
-          <td class="status-cell">{{statusSymbol this.m2_terbackup}}</td>
-
-          <td class="status-cell">{{statusSymbol this.m3_berfungsi}}</td>
-          <td class="status-cell">{{statusSymbol this.m3_terbackup}}</td>
-
-          <td class="status-cell">{{statusSymbol this.m4_berfungsi}}</td>
-          <td class="status-cell">{{statusSymbol this.m4_terbackup}}</td>
-
+          <td class="col-nama">{{pointLabel}}</td>
+          {{#each weeks}}<td class="status-cell">{{statusSymbol berfungsi}}</td><td class="status-cell">{{statusSymbol terbackup}}</td>{{/each}}
           <td class="col-note-cell"></td>
         </tr>
         {{/each}}

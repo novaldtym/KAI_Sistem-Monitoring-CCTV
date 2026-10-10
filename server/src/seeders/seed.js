@@ -31,7 +31,6 @@ async function seed() {
     console.log('🏢 Seeding stations...');
     const stLempuyangan = await Station.create({
       nama_stasiun: 'Stasiun Lempuyangan',
-      business_area: 'B060',
       kode_stasiun: 'LPN',
       hari_mulai_m1: 5,
     });

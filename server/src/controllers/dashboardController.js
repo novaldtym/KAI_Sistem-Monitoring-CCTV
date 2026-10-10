@@ -1,6 +1,6 @@
-const { MonitoringReport, Station } = require('../models');
-const { Op } = require('sequelize');
-const sequelize = require('../config/database');
+const { MonitoringReport } = require('../models');
+const { jakartaDate } = require('../services/reportCalendar');
+const { getStationInspection } = require('../services/stationInspection');
 
 exports.getSummary = async (req, res, next) => {
   try {
@@ -16,26 +16,22 @@ exports.getSummary = async (req, res, next) => {
       MonitoringReport.count({ where: { ...where, status: 'rejected' } }),
     ]);
 
-    const now = new Date();
-    const currentMonth = now.getMonth() + 1;
-    const currentYear = now.getFullYear();
-
-    // Stations without report this month
-    const allStations = await Station.findAll({ where: { is_active: true }, attributes: ['id', 'nama_stasiun'] });
-    const reportedStations = await MonitoringReport.findAll({
-      where: { bulan: currentMonth, tahun: currentYear },
-      attributes: ['station_id'],
-    });
-    const reportedIds = reportedStations.map((r) => r.station_id);
-    const unreported = allStations.filter((s) => !reportedIds.includes(s.id));
+    const [currentYear, currentMonth] = jakartaDate().split('-').map(Number);
 
     res.json({
       data: {
         counts: { draft, submitted, approved, rejected, total: draft + submitted + approved + rejected },
-        unreportedStations: unreported,
         currentPeriod: { bulan: currentMonth, tahun: currentYear },
       },
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.getInspection = async (req, res, next) => {
+  try {
+    res.json({ data: await getStationInspection(req.query, req.user) });
   } catch (error) {
     next(error);
   }

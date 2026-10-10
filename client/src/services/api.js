@@ -43,6 +43,7 @@ export const getOfficersApi = () => api.get('/auth/officers');
 
 // --- Dashboard APIs ---
 export const getDashboardSummaryApi = () => api.get('/dashboard/summary');
+export const getStationInspectionApi = (params) => api.get('/dashboard/inspection', { params });
 export const getPendingCountApi = () => api.get('/dashboard/pending-count');
 
 // --- Station APIs ---
@@ -69,7 +70,15 @@ export const importCCTVPointsApi = (formData) => api.post('/cctv-points/import',
 });
 export const deleteCCTVPointApi = (id) => api.delete(`/cctv-points/${id}`);
 
+export const previewInventoryImportApi = (formData) => api.post('/inventory/import/preview', formData, {
+  headers: { 'Content-Type': 'multipart/form-data' },
+});
+export const importInventoryApi = (formData) => api.post('/inventory/import', formData, {
+  headers: { 'Content-Type': 'multipart/form-data' },
+});
+
 // --- Report APIs ---
+export const getReportCalendarApi = (params) => api.get('/reports/calendar', { params });
 export const getReportsApi = (params) => api.get('/reports', { params });
 export const getReportByIdApi = (id) => api.get(`/reports/${id}`);
 export const createReportApi = (data) => api.post('/reports', data);

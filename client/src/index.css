@@ -93,6 +93,7 @@ body {
 
 .main-content {
   flex: 1;
+  min-width: 0;
   margin-left: 260px;
   padding: 28px 36px;
   min-height: 100vh;
@@ -560,8 +561,13 @@ body {
   user-select: none;
 }
 
-.status-toggle:hover {
+.status-toggle:hover:not(:disabled) {
   transform: scale(1.08);
+}
+
+.status-toggle:focus-visible {
+  outline: 2px solid var(--kai-blue);
+  outline-offset: 3px;
 }
 
 .status-toggle.status-v {
@@ -580,6 +586,13 @@ body {
   background: #f8fafc;
   border-color: #cbd5e1;
   color: var(--text-muted);
+}
+
+.status-toggle:disabled {
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  transition: none;
 }
 
 /* === BADGES === */

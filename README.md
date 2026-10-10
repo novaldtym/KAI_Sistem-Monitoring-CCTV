@@ -1,6 +1,6 @@
 # 📹 Digitalisasi Monitoring CCTV — PT Kereta Api Indonesia (Persero)
 
-Aplikasi Web fullstack untuk digitalisasi formulir pemeriksaan dan monitoring operasional & backup titik CCTV stasiun KAI secara mingguan (M1-M4), dilengkapi workflow approval Assistant Manager dan fitur **Cetak PDF Presisi 100% Identik Formulir Fisik KAI**.
+Aplikasi Web fullstack untuk digitalisasi formulir pemeriksaan dan monitoring operasional & backup titik CCTV stasiun KAI secara mingguan (M1–M5 sesuai kalender), dilengkapi workflow approval Assistant Manager dan cetak PDF formulir monitoring.
 
 ---
 
@@ -21,7 +21,7 @@ monitoring-cctv/
 │   │   ├── config/           # Koneksi database MySQL (Sequelize)
 │   │   ├── controllers/      # Logic Controller (Auth, Station, CCTV, Report, Dashboard)
 │   │   ├── middleware/       # JWT Auth & Error Handler
-│   │   ├── models/           # 6 Model Database MySQL
+│   │   ├── models/           # Model database dan counter nomor referensi bulanan
 │   │   ├── routes/           # REST API Endpoint Routes
 │   │   ├── seeders/          # Data awal (Users, Station Lempuyangan, 20 Titik CCTV)
 │   │   ├── services/         # Puppeteer PDF Generator Service
@@ -115,18 +115,20 @@ Sistem sudah dilengkapi 2 akun untuk pengujian role:
 
 ## 📋 Fitur Utama Aplikasi
 
-1. **Dashboard Analytics**: Ringkasan jumlah draft, pending review, approved, rejected, serta peringatan stasiun yang belum mengisi bulan berjalan.
-2. **Input Monitoring Mingguan (M1-M4)**:
+1. **Dashboard Analytics**: Ringkasan jumlah draft, pending review, approved, rejected, serta peta kelengkapan pemeriksaan stasiun Daop 6 per bulan dan minggu.
+2. **Input Monitoring Mingguan (M1–M5 sesuai kalender)**:
    - Klik toggle interaktif: **✓ (Berfungsi/Terbackup)** ↔ **✗ (Tidak)** ↔ **- (Kosong)**
-   - Date picker tanggal pelaksanaan per minggu
-   - Auto-save draft
+   - M1 dimulai pada Senin pertama bulan laporan; setiap minggu berjalan Senin–Minggu, termasuk jika berakhir pada bulan berikutnya.
+   - Pengisian hanya pada minggu berjalan menurut waktu server WIB. Simpan Draft untuk melanjutkan minggu berikutnya.
+   - No. Ref otomatis saat draft pertama disimpan, berurutan untuk semua stasiun dalam bulan/tahun laporan dan mulai lagi dari 01 pada periode berikutnya.
+   - Aturan rentang, tanggal pemeriksaan, dan data lama dijelaskan pada [pemeriksaan mingguan](docs/pemeriksaan-mingguan.md).
 3. **Approval Workflow**:
    - Status transition: `Draft` → `Submitted` → `Approved` / `Rejected`
    - Log riwayat approval lengkap dengan catatan komentar penolakan.
-4. **Cetak PDF Presisi 100% Identik Formulir Fisik KAI**:
+4. **Cetak PDF Formulir Monitoring**:
    - Menggunakan Puppeteer (Chromium Engine) merender HTML Handlebars template.
-   - Mengikuti tata letak asli: Header logo KAI, metadata No Ref/Nomor/Versi, tabel M1-M4, catatan, serta blok tanda tangan NIPP Asst. Manager & Petugas.
-5. **Master Data Management**: CRUD Stasiun, Business Area, dan Titik CCTV per stasiun.
+   - Memuat header logo KAI, metadata No Ref/Nomor/Versi, tabel empat atau lima minggu sesuai kalender, catatan, serta blok tanda tangan NIPP Asst. Manager & Petugas.
+5. **Master Data Management**: CRUD Stasiun dan Titik CCTV per stasiun.
 
 ---
 

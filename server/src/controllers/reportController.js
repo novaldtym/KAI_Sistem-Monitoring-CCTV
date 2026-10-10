@@ -1,6 +1,7 @@
-const { Op } = require('sequelize');
+const { getCalendar, getReportCalendar, currentInspectionPeriod, scheduleFields, reportCalendarData, validateStatusChanges, checkedFields, validateClientDates, badRequest } = require('../services/reportCalendar');
 const { ownsReport, canReadReport } = require('../policies/reportAccess');
-const { MonitoringReport, MonitoringDetail, CCTVPoint, Station, User, ApprovalLog } = require('../models');
+const { sequelize, MonitoringReport, MonitoringDetail, CCTVPoint, Station, User, ApprovalLog } = require('../models');
+const { allocateReportReference } = require('../services/reportReference');
 
 exports.getAll = async (req, res, next) => {
   try {
@@ -23,7 +24,7 @@ exports.getAll = async (req, res, next) => {
     const { rows, count } = await MonitoringReport.findAndCountAll({
       where,
       include: [
-        { model: Station, as: 'station', attributes: ['id', 'nama_stasiun', 'business_area'] },
+        { model: Station, as: 'station', attributes: ['id', 'nama_stasiun'] },
         { model: User, as: 'createdBy', attributes: ['id', 'nama', 'nipp'] },
       ],
       order: [['tahun', 'DESC'], ['bulan', 'DESC'], ['created_at', 'DESC']],
@@ -53,7 +54,7 @@ exports.getById = async (req, res, next) => {
         { model: User, as: 'createdBy', attributes: ['id', 'nama', 'nipp', 'jabatan'] },
         {
           model: MonitoringDetail, as: 'details',
-          include: [{ model: CCTVPoint, as: 'cctvPoint', attributes: ['id', 'nomor_urut', 'nama_titik'] }],
+          include: [{ model: CCTVPoint, as: 'cctvPoint', attributes: ['id', 'nomor_urut', 'nama_titik', 'jumlah_kamera', 'unit_pengelola'] }],
         },
         {
           model: ApprovalLog, as: 'approvalLogs',
@@ -72,10 +73,27 @@ exports.getById = async (req, res, next) => {
     // Sort details by nomor_urut
     const data = report.toJSON();
     if (data.details) {
-      data.details.sort((a, b) => a.cctvPoint.nomor_urut - b.cctvPoint.nomor_urut);
+      data.details.sort((a, b) => (a.cctvPoint?.nomor_urut || 0) - (b.cctvPoint?.nomor_urut || 0));
     }
 
+    data.calendar = reportCalendarData(data);
     res.json({ data });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.calendar = async (req, res, next) => {
+  try {
+    if (req.query.report_id !== undefined) {
+      if (!Number.isInteger(Number(req.query.report_id)) || Number(req.query.report_id) < 1) throw badRequest('ID laporan tidak valid.');
+      const report = await MonitoringReport.findByPk(req.query.report_id);
+      if (!report) return res.status(404).json({ message: 'Laporan tidak ditemukan.' });
+      if (!canReadReport(req.user, report)) return res.status(403).json({ message: 'Anda tidak memiliki akses ke laporan ini.' });
+      return res.json({ data: reportCalendarData(report) });
+    }
+    const period = currentInspectionPeriod();
+    res.json({ data: getCalendar(req.query.bulan ?? period.bulan, req.query.tahun ?? period.tahun) });
   } catch (error) {
     next(error);
   }
@@ -83,59 +101,36 @@ exports.getById = async (req, res, next) => {
 
 exports.create = async (req, res, next) => {
   try {
-    const { station_id, bulan, tahun, no_ref, tanggal_m1, tanggal_m2, tanggal_m3, tanggal_m4, checked_at_m1, checked_at_m2, checked_at_m3, checked_at_m4, catatan, details } = req.body;
-
-    // Check duplicate
-    const existing = await MonitoringReport.findOne({ where: { station_id, bulan, tahun } });
-    if (existing) {
-      return res.status(409).json({ message: 'Laporan untuk stasiun, bulan, dan tahun ini sudah ada.' });
-    }
-
-    // Create report
-    const report = await MonitoringReport.create({
-      station_id, bulan, tahun, no_ref, tanggal_m1, tanggal_m2, tanggal_m3, tanggal_m4,
-      checked_at_m1, checked_at_m2, checked_at_m3, checked_at_m4,
-      catatan, status: 'draft', created_by: req.user.id,
+    const { station_id, bulan, tahun, catatan, details } = req.body;
+    const calendar = getCalendar(bulan, tahun);
+    if (!Number.isInteger(Number(station_id)) || Number(station_id) < 1) throw badRequest('Pilih stasiun yang valid.');
+    const reportId = await sequelize.transaction(async (transaction) => {
+      const station = await Station.findByPk(station_id, { transaction, lock: transaction.LOCK.UPDATE });
+      if (!station || !station.is_active) throw badRequest('Stasiun tidak ditemukan atau nonaktif.');
+      const existing = await MonitoringReport.findOne({ where: { station_id, bulan: calendar.bulan, tahun: calendar.tahun }, transaction });
+      if (existing) throw Object.assign(new Error('Laporan untuk stasiun, bulan, dan tahun ini sudah ada.'), { statusCode: 409 });
+      const points = await CCTVPoint.findAll({ where: { station_id, is_active: true }, order: [['nomor_urut', 'ASC']], transaction });
+      if (!points.length) throw badRequest('Stasiun ini belum memiliki kelompok CCTV aktif.');
+      const initialDetails = points.map((point) => ({ cctv_point_id: point.id }));
+      const schedule = scheduleFields(calendar);
+      validateClientDates(req.body, schedule);
+      const changes = validateStatusChanges(details, initialDetails, calendar);
+      const changedById = new Map(changes.map((item) => [item.cctv_point_id, item.changes]));
+      const no_ref = await allocateReportReference(calendar.bulan, calendar.tahun, transaction);
+      const report = await MonitoringReport.create({ station_id, bulan: calendar.bulan, tahun: calendar.tahun,
+        calendar_scheme: 'monday', no_ref, catatan, ...schedule, ...checkedFields(changes, calendar), status: 'draft', created_by: req.user.id }, { transaction });
+      await MonitoringDetail.bulkCreate(initialDetails.map((detail) => ({
+        ...detail, report_id: report.id, ...changedById.get(detail.cctv_point_id),
+      })), { transaction, validate: true });
+      return report.id;
     });
-
-    // Create details for each CCTV point
-    if (details && details.length > 0) {
-      const detailRecords = details.map((d) => ({
-        report_id: report.id,
-        cctv_point_id: d.cctv_point_id,
-        m1_berfungsi: d.m1_berfungsi || '-',
-        m1_terbackup: d.m1_terbackup || '-',
-        m2_berfungsi: d.m2_berfungsi || '-',
-        m2_terbackup: d.m2_terbackup || '-',
-        m3_berfungsi: d.m3_berfungsi || '-',
-        m3_terbackup: d.m3_terbackup || '-',
-        m4_berfungsi: d.m4_berfungsi || '-',
-        m4_terbackup: d.m4_terbackup || '-',
-      }));
-      await MonitoringDetail.bulkCreate(detailRecords);
-    } else {
-      // Auto-generate details from active CCTV points
-      const points = await CCTVPoint.findAll({
-        where: { station_id, is_active: true },
-        order: [['nomor_urut', 'ASC']],
-      });
-      const detailRecords = points.map((p) => ({
-        report_id: report.id,
-        cctv_point_id: p.id,
-      }));
-      if (detailRecords.length > 0) {
-        await MonitoringDetail.bulkCreate(detailRecords);
-      }
-    }
-
-    const created = await MonitoringReport.findByPk(report.id, {
-      include: [
-        { model: Station, as: 'station' },
-        { model: MonitoringDetail, as: 'details', include: [{ model: CCTVPoint, as: 'cctvPoint' }] },
-      ],
-    });
-
-    res.status(201).json({ message: 'Laporan berhasil dibuat.', data: created });
+    const created = await MonitoringReport.findByPk(reportId, { include: [
+      { model: Station, as: 'station' },
+      { model: MonitoringDetail, as: 'details', include: [{ model: CCTVPoint, as: 'cctvPoint' }] },
+    ] });
+    const data = created.toJSON();
+    data.calendar = reportCalendarData(data);
+    res.status(201).json({ message: 'Laporan berhasil dibuat.', data });
   } catch (error) {
     next(error);
   }
@@ -143,35 +138,26 @@ exports.create = async (req, res, next) => {
 
 exports.update = async (req, res, next) => {
   try {
-    const report = await MonitoringReport.findByPk(req.params.id);
-    if (!report) return res.status(404).json({ message: 'Laporan tidak ditemukan.' });
-
-    if (!['draft', 'rejected'].includes(report.status)) {
-      return res.status(400).json({ message: 'Hanya laporan berstatus draft atau rejected yang bisa diedit.' });
-    }
-
-    if (report.created_by !== req.user.id) {
-      return res.status(403).json({ message: 'Anda hanya bisa mengedit laporan milik Anda.' });
-    }
-
-    const { no_ref, tanggal_m1, tanggal_m2, tanggal_m3, tanggal_m4, checked_at_m1, checked_at_m2, checked_at_m3, checked_at_m4, catatan, details } = req.body;
-    await report.update({ no_ref, tanggal_m1, tanggal_m2, tanggal_m3, tanggal_m4, checked_at_m1, checked_at_m2, checked_at_m3, checked_at_m4, catatan });
-
-    // Update details
-    if (details && details.length > 0) {
-      for (const d of details) {
-        await MonitoringDetail.update(
-          {
-            m1_berfungsi: d.m1_berfungsi, m1_terbackup: d.m1_terbackup,
-            m2_berfungsi: d.m2_berfungsi, m2_terbackup: d.m2_terbackup,
-            m3_berfungsi: d.m3_berfungsi, m3_terbackup: d.m3_terbackup,
-            m4_berfungsi: d.m4_berfungsi, m4_terbackup: d.m4_terbackup,
-          },
-          { where: { report_id: report.id, cctv_point_id: d.cctv_point_id } }
-        );
+    await sequelize.transaction(async (transaction) => {
+      const report = await MonitoringReport.findByPk(req.params.id, { transaction, lock: transaction.LOCK.UPDATE });
+      if (!report) throw Object.assign(new Error('Laporan tidak ditemukan.'), { statusCode: 404 });
+      if (!ownsReport(req.user, report)) throw Object.assign(new Error('Anda hanya bisa mengedit laporan milik Anda.'), { statusCode: 403 });
+      if (!['draft', 'rejected'].includes(report.status)) throw badRequest('Hanya laporan draft atau rejected yang bisa diedit.');
+      if (req.body.no_ref !== undefined && req.body.no_ref !== report.no_ref) {
+        throw badRequest('Nomor referensi ditentukan otomatis dan tidak dapat diubah.');
       }
-    }
-
+      for (const field of ['station_id', 'bulan', 'tahun']) {
+        if (req.body[field] !== undefined && Number(req.body[field]) !== report[field]) throw badRequest('Stasiun dan periode laporan tidak dapat diubah.');
+      }
+      const calendar = getReportCalendar(report);
+      const existingDetails = await MonitoringDetail.findAll({ where: { report_id: report.id }, transaction, lock: transaction.LOCK.UPDATE });
+      validateClientDates(req.body, report);
+      const changes = validateStatusChanges(req.body.details, existingDetails, calendar);
+      for (const detail of changes) {
+        await MonitoringDetail.update(detail.changes, { where: { report_id: report.id, cctv_point_id: detail.cctv_point_id }, transaction });
+      }
+      await report.update({ catatan: req.body.catatan, ...checkedFields(changes, calendar) }, { transaction });
+    });
     res.json({ message: 'Laporan berhasil diupdate.' });
   } catch (error) {
     next(error);

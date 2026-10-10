@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getReportByIdApi, downloadReportPdfApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
-import { FiArrowLeft, FiDownload, FiEdit, FiCheckCircle, FiXCircle } from 'react-icons/fi';
+import { FiArrowLeft, FiDownload, FiEdit } from 'react-icons/fi';
+
+import { pointLabel } from '../utils/reportPresentation';
 
 const ReportDetailPage = () => {
   const { id } = useParams();
@@ -77,10 +79,6 @@ const ReportDetailPage = () => {
       <div className="card" style={{ marginBottom: '24px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px' }}>
           <div>
-            <div className="form-label">Business Area</div>
-            <div style={{ fontWeight: '600' }}>{report.station?.business_area}</div>
-          </div>
-          <div>
             <div className="form-label">Petugas Pembuat</div>
             <div style={{ fontWeight: '600' }}>{report.createdBy?.nama} (NIPP: {report.createdBy?.nipp})</div>
           </div>
@@ -91,73 +89,31 @@ const ReportDetailPage = () => {
             </div>
           </div>
           <div>
-            <div className="form-label">Tanggal Pelaksanaan</div>
+            <div className="form-label">Pemeriksaan Mingguan</div>
             <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-              M1: {report.tanggal_m1 || '-'} | M2: {report.tanggal_m2 || '-'} | M3: {report.tanggal_m3 || '-'} | M4: {report.tanggal_m4 || '-'}
+              {(report.calendar?.weeks || []).map((week) => <div key={week.number}>{week.label}: tanggal {week.range} · {week.completedGroups}/{week.totalGroups} kelompok lengkap{week.checkedAt ? ` · Terakhir diisi ${week.checkedAt}` : ''}</div>)}
             </div>
           </div>
         </div>
       </div>
 
-      {/* MONITORING DETAILS TABLE */}
       <div className="table-container monitoring-grid" style={{ marginBottom: '24px' }}>
         <table>
           <thead>
-            <tr>
-              <th rowSpan="2">No</th>
-              <th rowSpan="2" className="col-nama">Nama Titik CCTV</th>
-              <th colSpan="2">M1</th>
-              <th colSpan="2">M2</th>
-              <th colSpan="2">M3</th>
-              <th colSpan="2">M4</th>
+            <tr><th rowSpan={2}>No</th><th rowSpan={2} className="col-nama">Penempatan / Objek Pantau</th>
+              {(report.calendar?.weeks || []).map((week) => <th key={week.number} colSpan={2}>{week.label} ({week.range})</th>)}
             </tr>
-            <tr>
-              <th>Berfungsi</th>
-              <th>Terbackup</th>
-              <th>Berfungsi</th>
-              <th>Terbackup</th>
-              <th>Berfungsi</th>
-              <th>Terbackup</th>
-              <th>Berfungsi</th>
-              <th>Terbackup</th>
-            </tr>
+            <tr>{(report.calendar?.weeks || []).map((week) => <Fragment key={week.number}><th>Berfungsi</th><th>Terbackup</th></Fragment>)}</tr>
           </thead>
-          <tbody>
-            {(report.details || []).map((d) => (
-              <tr key={d.id}>
-                <td style={{ fontWeight: '700' }}>{d.cctvPoint?.nomor_urut}</td>
-                <td className="col-nama">{d.cctvPoint?.nama_titik}</td>
-
-                <td style={{ color: d.m1_berfungsi === 'V' ? 'var(--status-success)' : 'var(--status-danger)', fontWeight: 'bold' }}>
-                  {d.m1_berfungsi === 'V' ? '✓' : d.m1_berfungsi === 'X' ? '✗' : '-'}
-                </td>
-                <td style={{ color: d.m1_terbackup === 'V' ? 'var(--status-success)' : 'var(--status-danger)', fontWeight: 'bold' }}>
-                  {d.m1_terbackup === 'V' ? '✓' : d.m1_terbackup === 'X' ? '✗' : '-'}
-                </td>
-
-                <td style={{ color: d.m2_berfungsi === 'V' ? 'var(--status-success)' : 'var(--status-danger)', fontWeight: 'bold' }}>
-                  {d.m2_berfungsi === 'V' ? '✓' : d.m2_berfungsi === 'X' ? '✗' : '-'}
-                </td>
-                <td style={{ color: d.m2_terbackup === 'V' ? 'var(--status-success)' : 'var(--status-danger)', fontWeight: 'bold' }}>
-                  {d.m2_terbackup === 'V' ? '✓' : d.m2_terbackup === 'X' ? '✗' : '-'}
-                </td>
-
-                <td style={{ color: d.m3_berfungsi === 'V' ? 'var(--status-success)' : 'var(--status-danger)', fontWeight: 'bold' }}>
-                  {d.m3_berfungsi === 'V' ? '✓' : d.m3_berfungsi === 'X' ? '✗' : '-'}
-                </td>
-                <td style={{ color: d.m3_terbackup === 'V' ? 'var(--status-success)' : 'var(--status-danger)', fontWeight: 'bold' }}>
-                  {d.m3_terbackup === 'V' ? '✓' : d.m3_terbackup === 'X' ? '✗' : '-'}
-                </td>
-
-                <td style={{ color: d.m4_berfungsi === 'V' ? 'var(--status-success)' : 'var(--status-danger)', fontWeight: 'bold' }}>
-                  {d.m4_berfungsi === 'V' ? '✓' : d.m4_berfungsi === 'X' ? '✗' : '-'}
-                </td>
-                <td style={{ color: d.m4_terbackup === 'V' ? 'var(--status-success)' : 'var(--status-danger)', fontWeight: 'bold' }}>
-                  {d.m4_terbackup === 'V' ? '✓' : d.m4_terbackup === 'X' ? '✗' : '-'}
-                </td>
-              </tr>
-            ))}
-          </tbody>
+          <tbody>{(report.details || []).map((detail) => <tr key={detail.id}>
+            <td>{detail.cctvPoint?.nomor_urut}</td><td className="col-nama">{pointLabel(detail.cctvPoint, report.station)}</td>
+            {(report.calendar?.weeks || []).map((week) => <Fragment key={week.number}>{['berfungsi', 'terbackup'].map((kind) => {
+              const value = detail[`m${week.number}_${kind}`];
+              return <td key={kind} style={{ fontWeight: 'bold', color: value === 'V' ? 'var(--status-success)' : value === 'X' ? 'var(--status-danger)' : 'var(--text-muted)' }}>
+                {value === 'V' ? '✓' : value === 'X' ? '✗' : '-'}
+              </td>;
+            })}</Fragment>)}
+          </tr>)}</tbody>
         </table>
       </div>
 

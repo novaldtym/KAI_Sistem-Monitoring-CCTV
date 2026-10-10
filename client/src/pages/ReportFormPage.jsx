@@ -1,660 +1,260 @@
-import React, { useEffect, useState, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import {
-  getStationsApi,
-  getCCTVPointsByStationApi,
-  createReportApi,
-  updateReportApi,
-  getReportByIdApi,
-  submitReportApi,
-} from "../services/api";
-import StatusToggle from "../components/StatusToggle";
-import toast from "react-hot-toast";
-import { FiSave, FiSend, FiArrowLeft, FiCheck } from "react-icons/fi";
+import { Fragment, useEffect, useRef, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { getStationsApi, getCCTVPointsByStationApi, createReportApi, updateReportApi,
+  getReportByIdApi, submitReportApi, getReportCalendarApi } from '../services/api';
+import { useAuth } from '../context/AuthContext';
+import StatusToggle from '../components/StatusToggle';
+import { MONTHS, emptyStatuses, statusValues, pointLabel, weekStateLabel } from '../utils/reportPresentation';
+import toast from 'react-hot-toast';
+import { FiSave, FiSend, FiArrowLeft } from 'react-icons/fi';
+import './ReportFormPage.css';
 
-const ReportFormPage = () => {
+function ReportForm() {
   const { id } = useParams();
   const isEdit = Boolean(id);
+  const { user } = useAuth();
   const navigate = useNavigate();
-
+  const [period, setPeriod] = useState(null);
   const [stations, setStations] = useState([]);
-  const [selectedStation, setSelectedStation] = useState("");
-  const [bulan, setBulan] = useState(new Date().getMonth() + 1);
-  const [tahun, setTahun] = useState(new Date().getFullYear());
-  const [noRef, setNoRef] = useState("001/01/" + new Date().getFullYear());
-  const [catatan, setCatatan] = useState("");
-
-  const [tanggalM1, setTanggalM1] = useState("");
-  const [tanggalM2, setTanggalM2] = useState("");
-  const [tanggalM3, setTanggalM3] = useState("");
-  const [tanggalM4, setTanggalM4] = useState("");
-
-  const [cctvPoints, setCctvPoints] = useState([]);
-  const [detailsMap, setDetailsMap] = useState({}); // { [cctvPointId]: { m1_berfungsi, m1_terbackup, ... } }
-  const [reportStatus, setReportStatus] = useState("draft");
-
-  const [checkedAtM1, setCheckedAtM1] = useState(null);
-  const [checkedAtM2, setCheckedAtM2] = useState(null);
-  const [checkedAtM3, setCheckedAtM3] = useState(null);
-  const [checkedAtM4, setCheckedAtM4] = useState(null);
-
-  const [loading, setLoading] = useState(false);
+  const [selectedStation, setSelectedStation] = useState('');
+  const [report, setReport] = useState(null);
+  const [catatan, setCatatan] = useState('');
+  const [points, setPoints] = useState([]);
+  const [detailsMap, setDetailsMap] = useState({});
+  const [calendar, setCalendar] = useState(null);
+  const [calendarError, setCalendarError] = useState('');
+  const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
-  const [lastSaved, setLastSaved] = useState(null);
-
-  // Pagination
+  const [loadError, setLoadError] = useState('');
+  const [lastSaved, setLastSaved] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const stationRequest = useRef(0);
   const itemsPerPage = 20;
 
-  // Fetch stations on load
   useEffect(() => {
-    getStationsApi().then((res) => setStations(res.data.data));
+    let active = true;
+    getStationsApi().then((response) => { if (active) setStations(response.data.data); })
+      .catch(() => toast.error('Gagal memuat stasiun.'));
+    return () => { active = false; };
   }, []);
 
-  // Recalculate M1-M4 dates when bulan/tahun changes
-  useEffect(() => {
-    if (selectedStation && bulan && tahun && stations.length > 0) {
-      calcM1M4Dates(selectedStation, bulan, tahun);
-    }
-  }, [bulan, tahun, stations]);
+  const applyReport = (data) => {
+    setReport(data);
+    setSelectedStation(String(data.station_id));
+    setPeriod({ bulan: data.bulan, tahun: data.tahun });
+    setCatatan(data.catatan || '');
+    setPoints((data.details || []).map((detail) => detail.cctvPoint).filter(Boolean)
+      .sort((a, b) => a.nomor_urut - b.nomor_urut));
+    setDetailsMap(Object.fromEntries((data.details || []).map((detail) => [detail.cctv_point_id, statusValues(detail)])));
+    if (data.calendar) setCalendar(data.calendar);
+  };
 
-  // Fetch report data if editing
   useEffect(() => {
+    let active = true;
     if (isEdit) {
-      setLoading(true);
-      getReportByIdApi(id)
-        .then((res) => {
-          const r = res.data.data;
-          setSelectedStation(r.station_id);
-          setBulan(r.bulan);
-          setTahun(r.tahun);
-          setNoRef(r.no_ref || "");
-          setCatatan(r.catatan || "");
-          setReportStatus(r.status);
-          setCheckedAtM1(r.checked_at_m1 || null);
-          setCheckedAtM2(r.checked_at_m2 || null);
-          setCheckedAtM3(r.checked_at_m3 || null);
-          setCheckedAtM4(r.checked_at_m4 || null);
-
-          const map = {};
-          (r.details || []).forEach((d) => {
-            map[d.cctv_point_id] = {
-              m1_berfungsi: d.m1_berfungsi,
-              m1_terbackup: d.m1_terbackup,
-              m2_berfungsi: d.m2_berfungsi,
-              m2_terbackup: d.m2_terbackup,
-              m3_berfungsi: d.m3_berfungsi,
-              m3_terbackup: d.m3_terbackup,
-              m4_berfungsi: d.m4_berfungsi,
-              m4_terbackup: d.m4_terbackup,
-            };
-          });
-          setDetailsMap(map);
-
-          // Fetch points for this station
-          return getCCTVPointsByStationApi(r.station_id);
-        })
-        .then((res) => {
-          if (res) setCctvPoints(res.data.data);
-        })
-        .catch(() => toast.error("Gagal memuat data laporan."))
-        .finally(() => setLoading(false));
+      getReportByIdApi(id).then((response) => { if (active) applyReport(response.data.data); })
+        .catch((error) => { if (active) setLoadError(error.response?.data?.message || 'Gagal memuat laporan.'); })
+        .finally(() => { if (active) setLoading(false); });
     }
+    return () => { active = false; };
   }, [id, isEdit]);
 
-  const calcM1M4Dates = (stationId, bln, thn) => {
-    const station = stations.find((s) => s.id === parseInt(stationId));
-    if (!station || !station.hari_mulai_m1 || !bln || !thn) return;
-    const day = station.hari_mulai_m1;
-    const m1 = new Date(parseInt(thn), parseInt(bln) - 1, day);
-    const fmt = (d) =>
-      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-    setTanggalM1(fmt(m1));
-    setTanggalM2(fmt(new Date(m1.getTime() + 7 * 86400000)));
-    setTanggalM3(fmt(new Date(m1.getTime() + 14 * 86400000)));
-    setTanggalM4(fmt(new Date(m1.getTime() + 21 * 86400000)));
-  };
-
-  // Load CCTV points when station changes in create mode
-  const handleStationChange = async (stationId) => {
-    setSelectedStation(stationId);
-    if (!stationId) {
-      setCctvPoints([]);
-      setDetailsMap({});
-      setTanggalM1("");
-      setTanggalM2("");
-      setTanggalM3("");
-      setTanggalM4("");
-      setCurrentPage(1);
-      return;
-    }
-
-    calcM1M4Dates(stationId, bulan, tahun);
-
-    try {
-      const res = await getCCTVPointsByStationApi(stationId);
-      const points = res.data.data;
-      setCctvPoints(points);
-      setCurrentPage(1);
-
-      const map = {};
-      points.forEach((p) => {
-        map[p.id] = {
-          m1_berfungsi: "-",
-          m1_terbackup: "-",
-          m2_berfungsi: "-",
-          m2_terbackup: "-",
-          m3_berfungsi: "-",
-          m3_terbackup: "-",
-          m4_berfungsi: "-",
-          m4_terbackup: "-",
-        };
-      });
-      setDetailsMap(map);
-    } catch {
-      toast.error("Gagal memuat titik CCTV.");
-    }
-  };
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const parseDate = (s) => s ? new Date(s + 'T00:00:00') : null;
-  const m1Locked = tanggalM2 ? today >= parseDate(tanggalM2) : false;
-  const m2Locked = tanggalM3 ? today >= parseDate(tanggalM3) : false;
-  const m3Locked = tanggalM4 ? today >= parseDate(tanggalM4) : false;
-  const m4End = tanggalM4 ? new Date(parseDate(tanggalM4).getTime() + 7 * 86400000) : null;
-  const m4Locked = m4End ? today >= m4End : false;
-
-  const todayStr = (() => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  })();
-
-  const totalPages = Math.ceil(cctvPoints.length / itemsPerPage) || 1;
-  const paginatedPoints = cctvPoints.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
-  const handlePrevPage = () => setCurrentPage((p) => Math.max(1, p - 1));
-  const handleNextPage = () => setCurrentPage((p) => Math.min(totalPages, p + 1));
-
-  // Toggle cell status
-  const handleToggle = (pointId, field, newVal) => {
-    setDetailsMap((prev) => ({
-      ...prev,
-      [pointId]: {
-        ...prev[pointId],
-        [field]: newVal,
-      },
-    }));
-
-    if (field.startsWith('m1_')) setCheckedAtM1(todayStr);
-    else if (field.startsWith('m2_')) setCheckedAtM2(todayStr);
-    else if (field.startsWith('m3_')) setCheckedAtM3(todayStr);
-    else if (field.startsWith('m4_')) setCheckedAtM4(todayStr);
-  };
-
-  // Helper to build payload
-  const buildPayload = () => {
-    const details = Object.keys(detailsMap).map((pointId) => ({
-      cctv_point_id: parseInt(pointId),
-      ...detailsMap[pointId],
-    }));
-
-    return {
-      station_id: parseInt(selectedStation),
-      bulan: parseInt(bulan),
-      tahun: parseInt(tahun),
-      no_ref: noRef,
-      tanggal_m1: tanggalM1 || null,
-      tanggal_m2: tanggalM2 || null,
-      tanggal_m3: tanggalM3 || null,
-      tanggal_m4: tanggalM4 || null,
-      checked_at_m1: checkedAtM1 || null,
-      checked_at_m2: checkedAtM2 || null,
-      checked_at_m3: checkedAtM3 || null,
-      checked_at_m4: checkedAtM4 || null,
-      catatan,
-      details,
+  useEffect(() => {
+    let active = true;
+    let latest = 0;
+    const refresh = async () => {
+      const request = ++latest;
+      try {
+        const response = await getReportCalendarApi(isEdit ? { report_id: id } : period || {});
+        if (active && request === latest) {
+          const data = response.data.data;
+          setCalendar(data);
+          if (!period) setPeriod({ bulan: data.bulan, tahun: data.tahun });
+          setCalendarError('');
+        }
+      } catch (error) {
+        if (active && request === latest) {
+          setCalendar(null);
+          setCalendarError(error.response?.data?.message || 'Jadwal belum dapat diperiksa. Coba muat ulang halaman.');
+        }
+      }
     };
-  };
+    refresh();
+    const interval = window.setInterval(refresh, 30000);
+    window.addEventListener('focus', refresh);
+    return () => { active = false; window.clearInterval(interval); window.removeEventListener('focus', refresh); };
+  }, [period, id, isEdit]);
 
-  // Save Draft
-  const handleSaveDraft = async () => {
-    if (!selectedStation) {
-      toast.error("Pilih Stasiun terlebih dahulu.");
-      return;
-    }
+  const station = report?.station || stations.find((item) => String(item.id) === String(selectedStation));
+  const matchingCalendar = calendar && period && calendar.bulan === Number(period.bulan) && calendar.tahun === Number(period.tahun) ? calendar : null;
+  const weeks = matchingCalendar?.weeks || [];
+  const canEdit = !isEdit || (report?.created_by === user?.id && ['draft', 'rejected'].includes(report?.status));
+  const disabled = saving || loading || !canEdit || !matchingCalendar || !points.length;
+  const totalPages = Math.max(1, Math.ceil(points.length / itemsPerPage));
+  const visiblePoints = points.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  const completed = (week) => points.filter((point) => ['V', 'X'].includes(detailsMap[point.id]?.[`m${week.number}_berfungsi`]) &&
+    ['V', 'X'].includes(detailsMap[point.id]?.[`m${week.number}_terbackup`])).length;
+  const isWeekLocked = (week) => !canEdit || !week.editable;
+  const weekLockReason = (week) => !canEdit ? 'Laporan tidak dapat diedit.' :
+    week.state === 'past' ? 'Minggu pemeriksaan sudah lewat.' : 'Minggu pemeriksaan belum dimulai.';
 
-    setSaving(true);
+  const handleStationChange = async (value) => {
+    const request = ++stationRequest.current;
+    setSelectedStation(value);
+    setPoints([]);
+    setDetailsMap({});
+    setCurrentPage(1);
+    setLastSaved('');
+    if (!value) { setLoading(false); return; }
+    setLoading(true);
     try {
-      const payload = buildPayload();
-      if (isEdit) {
-        await updateReportApi(id, payload);
-        toast.success("Draft berhasil diperbarui.");
-      } else {
-        const res = await createReportApi(payload);
-        toast.success("Draft berhasil disimpan.");
-        navigate(`/reports/${res.data.data.id}/edit`, { replace: true });
+      const response = await getCCTVPointsByStationApi(value);
+      if (request !== stationRequest.current) return;
+      setPoints(response.data.data);
+      setDetailsMap(Object.fromEntries(response.data.data.map((point) => [point.id, emptyStatuses()])));
+    } catch {
+      if (request === stationRequest.current) toast.error('Gagal memuat kelompok CCTV.');
+    } finally {
+      if (request === stationRequest.current) setLoading(false);
+    }
+  };
+  const changePeriod = (field, value) => {
+    setPeriod((previous) => ({ ...previous, [field]: value }));
+    setCalendar(null);
+    setLastSaved('');
+    setDetailsMap(Object.fromEntries(points.map((point) => [point.id, emptyStatuses()])));
+  };
+  const toggle = (pointId, week, field, value) => {
+    if (disabled || !week.editable) return;
+    setDetailsMap((previous) => ({ ...previous, [pointId]: { ...previous[pointId], [field]: value } }));
+    setLastSaved('');
+  };
+  const save = async (submit = false) => {
+    if (disabled) return;
+    if (submit && !window.confirm('Kirim laporan bulanan untuk review? Setelah dikirim, seluruh minggu tidak bisa diisi sampai laporan ditolak oleh reviewer.')) return;
+    setSaving(true);
+    let targetId = id;
+    try {
+      const payload = { station_id: Number(selectedStation), bulan: Number(period.bulan), tahun: Number(period.tahun),
+        catatan, details: points.map((point) => ({ cctv_point_id: point.id, ...detailsMap[point.id] })) };
+      if (isEdit) await updateReportApi(id, payload);
+      else {
+        const response = await createReportApi(payload);
+        targetId = response.data.data.id;
+        applyReport(response.data.data);
+        navigate(`/reports/${targetId}/edit`, { replace: true });
       }
-      setLastSaved(new Date().toLocaleTimeString());
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Gagal menyimpan draft.");
+      if (submit) {
+        await submitReportApi(targetId);
+        toast.success('Laporan berhasil dikirim untuk review.');
+        navigate('/reports');
+      } else {
+        const response = await getReportByIdApi(targetId);
+        applyReport(response.data.data);
+        setLastSaved(new Date().toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' }));
+        toast.success('Draft berhasil disimpan.');
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Gagal menyimpan laporan.');
     } finally {
       setSaving(false);
     }
   };
 
-  // Submit Report
-  const handleSubmit = async () => {
-    if (!selectedStation) {
-      toast.error("Pilih Stasiun terlebih dahulu.");
-      return;
-    }
-
-    if (
-      !window.confirm(
-        "Apakah Anda yakin ingin mengirim laporan ini untuk di-review? Data tidak bisa diubah setelah di-submit.",
-      )
-    ) {
-      return;
-    }
-
-    setSaving(true);
-    try {
-      const payload = buildPayload();
-      let targetId = id;
-
-      if (isEdit) {
-        await updateReportApi(id, payload);
-      } else {
-        const res = await createReportApi(payload);
-        targetId = res.data.data.id;
-      }
-
-      await submitReportApi(targetId);
-      toast.success("Laporan berhasil dikirim untuk review!");
-      navigate("/reports");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Gagal mengirim laporan.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const MONTHS = [
-    "Januari",
-    "Februari",
-    "Maret",
-    "April",
-    "Mei",
-    "Juni",
-    "Juli",
-    "Agustus",
-    "September",
-    "Oktober",
-    "November",
-    "Desember",
-  ];
-
-  if (loading) {
-    return (
-      <div className="loading-spinner">
-        <div className="spinner"></div>
-      </div>
-    );
-  }
+  if (loadError) return <div className="card" role="alert">{loadError}</div>;
+  if (isEdit && !report && loading) return <div className="loading-spinner"><div className="spinner" /></div>;
 
   return (
-    <div className="fade-in">
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: "24px",
-        }}
-      >
+    <div className="fade-in report-form">
+      <div className="toolbar">
         <div>
-          <button
-            onClick={() => navigate("/reports")}
-            className="btn btn-secondary btn-sm"
-            style={{ marginBottom: "8px" }}
-          >
-            <FiArrowLeft /> Kembali
-          </button>
-          <h1 className="page-title">
-            {isEdit
-              ? "Edit Form Monitoring CCTV"
-              : "Input Form Monitoring CCTV"}
-          </h1>
-          <p className="page-subtitle">
-            Isi data pemeriksaan CCTV mingguan (M1-M4)
-          </p>
-        </div>
-
-        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-          {lastSaved && (
-            <span
-              style={{
-                fontSize: "12px",
-                color: "var(--status-success)",
-                display: "flex",
-                alignItems: "center",
-                gap: "4px",
-              }}
-            >
-              <FiCheck /> Draft tersimpan {lastSaved}
-            </span>
-          )}
-          <button
-            onClick={handleSaveDraft}
-            disabled={saving}
-            className="btn btn-secondary"
-          >
-            <FiSave /> {saving ? "Menyimpan..." : "Simpan Draft"}
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={saving}
-            className="btn btn-primary"
-          >
-            <FiSend /> Submit untuk Review
-          </button>
+          <button className="btn btn-secondary btn-sm" onClick={() => navigate('/reports')}><FiArrowLeft /> Kembali</button>
+          <h1 className="page-title">{isEdit ? 'Edit' : 'Input'} Monitoring CCTV</h1>
+          <p className="page-subtitle">Satu baris pemeriksaan untuk setiap kelompok lokasi CCTV.</p>
         </div>
       </div>
-
-      {/* HEADER METADATA FORM */}
-      <div className="card" style={{ marginBottom: "24px" }}>
-        <h3
-          style={{ fontSize: "15px", fontWeight: "700", marginBottom: "16px" }}
-        >
-          Informasi Periode & Stasiun
-        </h3>
+      {!canEdit && <p className="report-form-notice">Laporan ini terkunci karena sudah dikirim atau disetujui.</p>}
+      <div className="card report-form-section">
+        <h2>Periode dan Stasiun</h2>
         <div className="form-row">
-          <div className="form-group">
-            <label className="form-label">Stasiun</label>
-            <select
-              className="form-control"
-              value={selectedStation}
-              onChange={(e) => handleStationChange(e.target.value)}
-              disabled={isEdit}
-            >
-              <option value="">-- Pilih Stasiun --</option>
-              {stations.map((st) => (
-                <option key={st.id} value={st.id}>
-                  {st.nama_stasiun} ({st.business_area})
-                </option>
-              ))}
+          <div className="form-group"><label className="form-label" htmlFor="report-station">Stasiun</label>
+            <select id="report-station" className="form-control" value={selectedStation} onChange={(event) => handleStationChange(event.target.value)} disabled={isEdit || saving}>
+              <option value="">Pilih stasiun</option>
+              {report?.station && !stations.some((item) => item.id === report.station_id) && <option value={report.station_id}>{report.station.nama_stasiun}</option>}
+              {stations.map((item) => <option key={item.id} value={item.id}>{item.nama_stasiun}</option>)}
             </select>
           </div>
-
-          <div className="form-group">
-            <label className="form-label">Bulan</label>
-            <select
-              className="form-control"
-              value={bulan}
-              onChange={(e) => setBulan(e.target.value)}
-              disabled={isEdit}
-            >
-              {MONTHS.map((m, idx) => (
-                <option key={idx + 1} value={idx + 1}>
-                  {m}
-                </option>
-              ))}
+          <div className="form-group"><label className="form-label" htmlFor="report-month">Bulan</label>
+            <select id="report-month" className="form-control" value={period?.bulan || ''} disabled={!period || isEdit || saving} onChange={(event) => changePeriod('bulan', event.target.value)}>
+              {!period && <option value="">Memuat periode…</option>}
+              {MONTHS.map((month, index) => <option value={index + 1} key={month}>{month}</option>)}
             </select>
           </div>
-
-          <div className="form-group">
-            <label className="form-label">Tahun</label>
-            <input
-              type="number"
-              className="form-control"
-              value={tahun}
-              onChange={(e) => setTahun(e.target.value)}
-              disabled={isEdit}
-            />
+          <div className="form-group"><label className="form-label" htmlFor="report-year">Tahun</label>
+            <input id="report-year" className="form-control" type="number" min="1900" max="9999" value={period?.tahun || ''} disabled={!period || isEdit || saving} onChange={(event) => changePeriod('tahun', event.target.value)} />
           </div>
-
-          <div className="form-group">
-            <label className="form-label">No. Ref</label>
-            <input
-              type="text"
-              className="form-control"
-              value={noRef}
-              onChange={(e) => setNoRef(e.target.value)}
-            />
+          <div className="form-group"><label className="form-label" htmlFor="report-reference">No. Ref</label>
+            <input id="report-reference" className="form-control" value={report?.no_ref || ''} disabled placeholder="Otomatis saat draft disimpan" />
           </div>
         </div>
-
-        {/* TANGGAL PELAKSANAAN MINGGUAN */}
-        <h3
-          style={{
-            fontSize: "14px",
-            fontWeight: "600",
-            margin: "16px 0 12px",
-            color: "var(--text-secondary)",
-          }}
-        >
-          Tanggal Pelaksanaan Mingguan
-        </h3>
-        <div className="form-row">
-          <div className="form-group">
-            <label className="form-label">Tgl M1</label>
-            <input
-              type="date"
-              className="form-control"
-              value={tanggalM1}
-              disabled
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Tgl M2</label>
-            <input
-              type="date"
-              className="form-control"
-              value={tanggalM2}
-              disabled
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Tgl M3</label>
-            <input
-              type="date"
-              className="form-control"
-              value={tanggalM3}
-              disabled
-            />
-          </div>
-          <div className="form-group">
-            <label className="form-label">Tgl M4</label>
-            <input
-              type="date"
-              className="form-control"
-              value={tanggalM4}
-              disabled
-            />
-          </div>
-        </div>
+        {calendarError && <p role="alert">{calendarError}</p>}
+        {matchingCalendar && <>
+          {matchingCalendar.scheme === 'fixed_dates' && <p className="report-form-notice">Laporan ini memakai jadwal lama. Rentangnya dipertahankan agar hasil pemeriksaan yang sudah tersimpan tidak berpindah minggu.</p>}
+          {matchingCalendar.scheme === 'monday' && weeks.every((week) => week.state === 'future') &&
+            <p className="report-form-notice">M1 belum dimulai. Minggu berjalan ada pada laporan {MONTHS[matchingCalendar.currentPeriod.bulan - 1]} {matchingCalendar.currentPeriod.tahun}.</p>}
+          <div className="report-weeks">{weeks.map((week) => <div key={week.number} className={`report-week ${isWeekLocked(week) ? '' : 'report-week-current'}`}>
+            <strong>{week.label} · tanggal {week.range}</strong>
+            <span>{!canEdit ? 'Laporan terkunci' : weekStateLabel(week.state)}</span>
+          </div>)}</div>
+        </>}
       </div>
-
-      {/* MONITORING INTERACTIVE TABLE */}
-      {cctvPoints.length > 0 ? (
-        <div
-          className="table-container monitoring-grid"
-          style={{ marginBottom: "24px" }}
-        >
+      <p className="report-form-notice">{points.length} kelompok lokasi · {points.reduce((sum, point) => sum + (point.jumlah_kamera || 1), 0)} kamera. Setiap kelompok memiliki status Berfungsi dan Terbackup.</p>
+      {loading ? <div className="loading-spinner"><div className="spinner" /></div> : points.length > 0 ? <>
+        <div className="table-container monitoring-grid report-form-section">
           <table>
             <thead>
-              <tr>
-                <th rowSpan="3" style={{ width: "40px" }}>
-                  No
-                </th>
-                <th rowSpan="3" className="col-nama">
-                  Nama Titik CCTV
-                </th>
-                <th colSpan="2">M1 {tanggalM1 && `(${tanggalM1})`}</th>
-                <th colSpan="2">M2 {tanggalM2 && `(${tanggalM2})`}</th>
-                <th colSpan="2">M3 {tanggalM3 && `(${tanggalM3})`}</th>
-                <th colSpan="2">M4 {tanggalM4 && `(${tanggalM4})`}</th>
-              </tr>
-              <tr>
-                <th colSpan="2" style={{ fontSize: '10px', fontWeight: '400', color: checkedAtM1 ? 'var(--status-success)' : 'var(--text-muted)', padding: '2px 4px' }}>
-                  {checkedAtM1 ? `Diperiksa: ${checkedAtM1}` : 'Belum diperiksa'}
-                </th>
-                <th colSpan="2" style={{ fontSize: '10px', fontWeight: '400', color: checkedAtM2 ? 'var(--status-success)' : 'var(--text-muted)', padding: '2px 4px' }}>
-                  {checkedAtM2 ? `Diperiksa: ${checkedAtM2}` : 'Belum diperiksa'}
-                </th>
-                <th colSpan="2" style={{ fontSize: '10px', fontWeight: '400', color: checkedAtM3 ? 'var(--status-success)' : 'var(--text-muted)', padding: '2px 4px' }}>
-                  {checkedAtM3 ? `Diperiksa: ${checkedAtM3}` : 'Belum diperiksa'}
-                </th>
-                <th colSpan="2" style={{ fontSize: '10px', fontWeight: '400', color: checkedAtM4 ? 'var(--status-success)' : 'var(--text-muted)', padding: '2px 4px' }}>
-                  {checkedAtM4 ? `Diperiksa: ${checkedAtM4}` : 'Belum diperiksa'}
-                </th>
-              </tr>
-              <tr>
-                <th style={{ width: "70px" }}>Berfungsi</th>
-                <th style={{ width: "70px" }}>Terbackup</th>
-                <th style={{ width: "70px" }}>Berfungsi</th>
-                <th style={{ width: "70px" }}>Terbackup</th>
-                <th style={{ width: "70px" }}>Berfungsi</th>
-                <th style={{ width: "70px" }}>Terbackup</th>
-                <th style={{ width: "70px" }}>Berfungsi</th>
-                <th style={{ width: "70px" }}>Terbackup</th>
-              </tr>
+              <tr><th rowSpan={3}>No</th><th rowSpan={3} className="col-nama">Penempatan / Objek Pantau</th>
+                {weeks.map((week) => <th key={week.number} colSpan={2}
+                  title={isWeekLocked(week) ? `Terkunci: ${weekLockReason(week)}` : 'Minggu berjalan, dapat diisi'}>
+                  {week.label} ({week.range})
+                </th>)}</tr>
+              <tr>{weeks.map((week) => <th key={week.number} colSpan={2} className="report-week-progress">
+                {completed(week)}/{points.length} kelompok lengkap
+                <span>{report?.[`checked_at_m${week.number}`] ? `Terakhir diisi: ${report[`checked_at_m${week.number}`]}` : 'Belum tersimpan'}</span>
+              </th>)}</tr>
+              <tr>{weeks.map((week) => <Fragment key={week.number}><th>Berfungsi</th><th>Terbackup</th></Fragment>)}</tr>
             </thead>
-            <tbody>
-              {paginatedPoints.map((point) => {
-                const detail = detailsMap[point.id] || {};
-                return (
-                  <tr key={point.id}>
-                    <td style={{ fontWeight: "700" }}>{point.nomor_urut}</td>
-                    <td className="col-nama">{point.nama_titik}</td>
-
-                    <td>
-                      <StatusToggle
-                        value={detail.m1_berfungsi || "-"}
-                        onChange={(val) =>
-                          handleToggle(point.id, "m1_berfungsi", val)
-                        }
-                        disabled={m1Locked}
-                      />
-                    </td>
-                    <td>
-                      <StatusToggle
-                        value={detail.m1_terbackup || "-"}
-                        onChange={(val) =>
-                          handleToggle(point.id, "m1_terbackup", val)
-                        }
-                        disabled={m1Locked}
-                      />
-                    </td>
-
-                    <td>
-                      <StatusToggle
-                        value={detail.m2_berfungsi || "-"}
-                        onChange={(val) =>
-                          handleToggle(point.id, "m2_berfungsi", val)
-                        }
-                        disabled={m2Locked}
-                      />
-                    </td>
-                    <td>
-                      <StatusToggle
-                        value={detail.m2_terbackup || "-"}
-                        onChange={(val) =>
-                          handleToggle(point.id, "m2_terbackup", val)
-                        }
-                        disabled={m2Locked}
-                      />
-                    </td>
-
-                    <td>
-                      <StatusToggle
-                        value={detail.m3_berfungsi || "-"}
-                        onChange={(val) =>
-                          handleToggle(point.id, "m3_berfungsi", val)
-                        }
-                        disabled={m3Locked}
-                      />
-                    </td>
-                    <td>
-                      <StatusToggle
-                        value={detail.m3_terbackup || "-"}
-                        onChange={(val) =>
-                          handleToggle(point.id, "m3_terbackup", val)
-                        }
-                        disabled={m3Locked}
-                      />
-                    </td>
-
-                    <td>
-                      <StatusToggle
-                        value={detail.m4_berfungsi || "-"}
-                        onChange={(val) =>
-                          handleToggle(point.id, "m4_berfungsi", val)
-                        }
-                        disabled={m4Locked}
-                      />
-                    </td>
-                    <td>
-                      <StatusToggle
-                        value={detail.m4_terbackup || "-"}
-                        onChange={(val) =>
-                          handleToggle(point.id, "m4_terbackup", val)
-                        }
-                        disabled={m4Locked}
-                      />
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
+            <tbody>{visiblePoints.map((point) => <tr key={point.id}>
+              <td>{point.nomor_urut}</td><td className="col-nama">{pointLabel(point, station)}</td>
+              {weeks.map((week) => <Fragment key={week.number}>{['berfungsi', 'terbackup'].map((kind) => {
+                const field = `m${week.number}_${kind}`;
+                return <td key={kind}><StatusToggle value={detailsMap[point.id]?.[field] || '-'}
+                  label={`${pointLabel(point, station)}, ${week.label}, ${kind === 'berfungsi' ? 'Berfungsi' : 'Terbackup'}`}
+                  disabled={disabled} locked={isWeekLocked(week)} lockReason={weekLockReason(week)}
+                  onChange={(value) => toggle(point.id, week, field, value)} /></td>;
+              })}</Fragment>)}
+            </tr>)}</tbody>
           </table>
-
-          {totalPages > 1 && (
-            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginTop: '16px', gap: '12px' }}>
-              <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-                Halaman {currentPage} dari {totalPages}
-              </span>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button 
-                  className="btn btn-secondary btn-sm" 
-                  onClick={handlePrevPage} 
-                  disabled={currentPage === 1}
-                >
-                  Sebelumnya
-                </button>
-                <button 
-                  className="btn btn-secondary btn-sm" 
-                  onClick={handleNextPage} 
-                  disabled={currentPage === totalPages}
-                >
-                  Berikutnya
-                </button>
-              </div>
-            </div>
-          )}
         </div>
-      ) : (
-        <div className="card empty-state">
-          <p>Pilih Stasiun di atas untuk menampilkan daftar titik CCTV.</p>
-        </div>
-      )}
-
-      {/* CATATAN */}
-      <div className="card">
-        <div className="form-group" style={{ marginBottom: 0 }}>
-          <label className="form-label">Catatan Tambahan</label>
-          <textarea
-            className="form-control"
-            rows="3"
-            placeholder="Masukkan catatan jika ada kendala titik CCTV..."
-            value={catatan}
-            onChange={(e) => setCatatan(e.target.value)}
-          ></textarea>
-        </div>
+        {totalPages > 1 && <div className="report-pagination">
+          <span>Halaman {currentPage} dari {totalPages} · maksimal 20 kelompok per halaman</span>
+          <button className="btn btn-secondary btn-sm" disabled={currentPage === 1} onClick={() => setCurrentPage((page) => page - 1)}>Sebelumnya</button>
+          <button className="btn btn-secondary btn-sm" disabled={currentPage === totalPages} onClick={() => setCurrentPage((page) => page + 1)}>Berikutnya</button>
+        </div>}
+      </> : <div className="card empty-state"><p>{selectedStation ? 'Belum ada kelompok CCTV aktif di stasiun ini.' : 'Pilih stasiun untuk menampilkan kelompok CCTV.'}</p></div>}
+      <div className="card report-form-section"><label className="form-label" htmlFor="report-notes">Catatan Tambahan</label>
+        <textarea id="report-notes" className="form-control" rows={3} value={catatan} disabled={!canEdit || saving} onChange={(event) => setCatatan(event.target.value)} />
+      </div>
+      {lastSaved && <p role="status" className="report-form-notice">Draft tersimpan pukul {lastSaved} WIB.</p>}
+      <div className="report-form-actions">
+        <button onClick={() => save(false)} disabled={disabled} className="btn btn-secondary"><FiSave /> {saving ? 'Menyimpan...' : 'Simpan Draft'}</button>
+        <button onClick={() => save(true)} disabled={disabled} className="btn btn-primary"><FiSend /> Submit untuk Review</button>
       </div>
     </div>
   );
-};
+}
 
-export default ReportFormPage;
+export default function ReportFormPage() {
+  const { id } = useParams();
+  return <ReportForm key={id || 'new'} />;
+}

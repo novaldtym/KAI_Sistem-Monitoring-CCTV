@@ -8,6 +8,7 @@ const { MonitoringReport, MonitoringDetail, CCTVPoint, Station, User, ApprovalLo
 router.use(authenticate);
 
 router.get('/', reportController.getAll);
+router.get('/calendar', reportController.calendar);
 router.get('/:id', reportController.getById);
 router.post('/', authorize('petugas'), reportController.create);
 router.put('/:id', authorize('petugas'), reportController.update);

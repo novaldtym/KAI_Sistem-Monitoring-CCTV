@@ -1,0 +1,59 @@
+.inventory-import-modal {
+  width: min(1120px, calc(100vw - 32px));
+  min-width: 0;
+  max-width: 1120px;
+}
+
+.inventory-import-note {
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+
+.inventory-import-heading {
+  font-size: 15px;
+  margin: 22px 0 10px;
+}
+
+.inventory-import-table {
+  overflow: auto;
+}
+
+.inventory-import-table th {
+  position: sticky;
+  top: 0;
+}
+
+.inventory-import-table td {
+  min-width: 80px;
+}
+
+.inventory-import-error,
+.inventory-import-result {
+  padding: 12px;
+  margin: 16px 0;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  line-height: 1.6;
+}
+
+.inventory-import-error {
+  color: #991b1b;
+  background: #fef2f2;
+}
+
+.inventory-import-error ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+
+.inventory-import-result {
+  color: #166534;
+  background: #f0fdf4;
+}
+
+@media (max-width: 600px) {
+  .inventory-import-modal { padding: 20px; }
+  .inventory-import-modal .modal-actions { flex-wrap: wrap; }
+}

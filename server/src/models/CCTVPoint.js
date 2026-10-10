@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
+const { CCTV_TYPES } = require('../constants/cctv');
 
 const CCTVPoint = sequelize.define('CCTVPoint', {
   id: {
@@ -32,7 +33,30 @@ const CCTVPoint = sequelize.define('CCTVPoint', {
     allowNull: true,
   },
   jenis: {
-    type: DataTypes.ENUM('dome', 'bullet', 'ptz', 'box', 'lainnya'),
+    type: DataTypes.STRING(50),
+    allowNull: true,
+    validate: { isIn: [CCTV_TYPES] },
+  },
+  jumlah_kamera: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 1,
+    validate: { isInt: true, min: 1 },
+  },
+  unit_pengelola: {
+    type: DataTypes.STRING(100),
+  },
+  kategori: {
+    type: DataTypes.STRING(100),
+  },
+  fungsi_ai: {
+    type: DataTypes.STRING(255),
+  },
+  keterangan: {
+    type: DataTypes.TEXT,
+  },
+  import_key: {
+    type: DataTypes.STRING(64),
     allowNull: true,
   },
   tipe_lokasi: {
@@ -51,6 +75,11 @@ const CCTVPoint = sequelize.define('CCTVPoint', {
       unique: true,
       fields: ['station_id', 'nomor_urut'],
       name: 'uq_station_nomor',
+    },
+    {
+      unique: true,
+      fields: ['import_key'],
+      name: 'uq_cctv_import_key',
     },
   ],
 });

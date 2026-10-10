@@ -2,13 +2,14 @@ const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
 const Handlebars = require('handlebars');
+const { getReportCalendar } = require('./reportCalendar');
 
 // Register Handlebars helpers
 Handlebars.registerHelper('eq', (a, b) => a === b);
 Handlebars.registerHelper('formatDate', (dateStr) => {
   if (!dateStr) return '-';
-  const d = new Date(dateStr);
-  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+  const [year, month, day] = String(dateStr).slice(0, 10).split('-');
+  return `${day}/${month}/${year}`;
 });
 Handlebars.registerHelper('statusSymbol', (val) => {
   if (val === 'V') return '✓';
@@ -25,12 +26,26 @@ async function generateMonitoringPDF(reportData) {
   const template = Handlebars.compile(templateHTML);
 
   // Sort details
-  const details = (reportData.details || []).sort(
+  const weeks = getReportCalendar(reportData).weeks.map((week) => ({
+    ...week, range: week.range.replace('–', '-'), checkedAt: reportData[`checked_at_m${week.number}`] || null,
+  }));
+  const details = [...(reportData.details || [])].sort(
     (a, b) => (a.cctvPoint?.nomor_urut || 0) - (b.cctvPoint?.nomor_urut || 0)
-  );
+  ).map((detail) => {
+    let label = detail.cctvPoint?.nama_titik || 'Kelompok CCTV';
+    const station = reportData.station;
+    for (const prefix of [station?.nama_stasiun, station?.nama_stasiun?.replace(/^stasiun\s+/i, ''), station?.kode_stasiun].filter(Boolean)) {
+      if (label.toLowerCase().startsWith(prefix.toLowerCase()) && /^\s*[-:]\s*\S/.test(label.slice(prefix.length))) {
+        label = label.slice(prefix.length).replace(/^\s*[-:]\s*/, '');
+      }
+    }
+    return { ...detail, pointLabel: label, weeks: weeks.map((week) => ({
+      berfungsi: detail[`m${week.number}_berfungsi`] || '-', terbackup: detail[`m${week.number}_terbackup`] || '-',
+    })) };
+  });
 
   // Prepare data
-  const bulanLabel = `01-${MONTHS[reportData.bulan].substring(0, 3)}-${String(reportData.tahun).slice(-2)}`;
+  const bulanLabel = `${MONTHS[reportData.bulan]} ${reportData.tahun}`;
   let tanggalLabel = '-';
   if (reportData.tanggal_m1) {
     const d = new Date(reportData.tanggal_m1);
@@ -74,10 +89,11 @@ async function generateMonitoringPDF(reportData) {
     nomorDokumen: 'FR.SM/TI/015.017/10-2020',
     tanggalTerbit: '12 Oktober 2020',
     versi: '002-2020',
-    businessArea: reportData.station?.business_area || '-',
     tanggal: tanggalLabel,
     bulan: bulanLabel,
     stasiunNama: reportData.station?.nama_stasiun || '-',
+    weeks,
+    statusColumnCount: weeks.length * 2,
     tanggalM1: reportData.tanggal_m1,
     tanggalM2: reportData.tanggal_m2,
     tanggalM3: reportData.tanggal_m3,
@@ -116,18 +132,17 @@ async function generateMonitoringPDF(reportData) {
 
   const browser = await puppeteer.launch(launchOptions);
 
-  const page = await browser.newPage();
-  await page.setContent(html, { waitUntil: 'networkidle0' });
-
-  const pdfBuffer = await page.pdf({
-    format: 'A4',
-    landscape: true,
-    printBackground: true,
-    margin: { top: '5mm', right: '8mm', bottom: '5mm', left: '8mm' },
-  });
-
-  await browser.close();
-  return Buffer.from(pdfBuffer);
+  try {
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+    const pdfBuffer = await page.pdf({
+      format: 'A4', landscape: true, printBackground: true,
+      margin: { top: '5mm', right: '8mm', bottom: '5mm', left: '8mm' },
+    });
+    return Buffer.from(pdfBuffer);
+  } finally {
+    await browser.close();
+  }
 }
 
 module.exports = { generateMonitoringPDF };

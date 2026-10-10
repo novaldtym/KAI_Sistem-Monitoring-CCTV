@@ -76,7 +76,7 @@ const Sidebar = () => {
 
             <NavLink to="/master/stations" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
               <span className="icon"><FiMapPin /></span>
-              Stasiun & Area
+              Stasiun
             </NavLink>
           </>
         )}

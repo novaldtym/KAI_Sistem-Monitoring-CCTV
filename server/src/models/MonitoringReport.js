@@ -14,13 +14,21 @@ const MonitoringReport = sequelize.define('MonitoringReport', {
   bulan: {
     type: DataTypes.TINYINT,
     allowNull: false,
+    validate: { isInt: true, min: 1, max: 12 },
   },
   tahun: {
     type: DataTypes.SMALLINT,
     allowNull: false,
+    validate: { isInt: true, min: 1900, max: 9999 },
   },
   no_ref: {
     type: DataTypes.STRING(20),
+  },
+  calendar_scheme: {
+    type: DataTypes.ENUM('fixed_dates', 'monday'),
+    allowNull: false,
+    // Existing reports keep their original week assignments when this column is added.
+    defaultValue: 'fixed_dates',
   },
   tanggal_m1: {
     type: DataTypes.DATEONLY,
@@ -34,6 +42,9 @@ const MonitoringReport = sequelize.define('MonitoringReport', {
   tanggal_m4: {
     type: DataTypes.DATEONLY,
   },
+  tanggal_m5: {
+    type: DataTypes.DATEONLY,
+  },
   checked_at_m1: {
     type: DataTypes.DATEONLY,
   },
@@ -44,6 +55,9 @@ const MonitoringReport = sequelize.define('MonitoringReport', {
     type: DataTypes.DATEONLY,
   },
   checked_at_m4: {
+    type: DataTypes.DATEONLY,
+  },
+  checked_at_m5: {
     type: DataTypes.DATEONLY,
   },
   catatan: {

@@ -5,11 +5,12 @@ import {
   createCCTVPointApi,
   updateCCTVPointApi,
   deleteCCTVPointApi,
-  importCCTVPointsApi,
 } from '../services/api';
 import toast from 'react-hot-toast';
 import { FiPlus, FiEdit2, FiTrash2, FiUpload } from 'react-icons/fi';
-import * as xlsx from 'xlsx';
+import InventoryImportModal from '../components/InventoryImportModal';
+
+const CCTV_TYPES = ['IP Camera', 'Analog Camera', 'Standalone Camera'];
 
 const CCTVMasterPage = () => {
   const [stations, setStations] = useState([]);
@@ -20,10 +21,7 @@ const CCTVMasterPage = () => {
   // Modal
   const [showModal, setShowModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
-  const [importFile, setImportFile] = useState(null);
-  const [previewData, setPreviewData] = useState([]);
-  const [importErrors, setImportErrors] = useState([]);
-  const [importing, setImporting] = useState(false);
+
 
   const [editingPoint, setEditingPoint] = useState(null);
   const [namaTitik, setNamaTitik] = useState('');
@@ -33,19 +31,30 @@ const CCTVMasterPage = () => {
   const [jenis, setJenis] = useState('');
   const [tipeLokasi, setTipeLokasi] = useState('');
   const [resolusi, setResolusi] = useState('');
+  const [jumlahKamera, setJumlahKamera] = useState(1);
+  const [unitPengelola, setUnitPengelola] = useState('');
+  const [kategori, setKategori] = useState('');
+  const [fungsiAi, setFungsiAi] = useState('');
+  const [keterangan, setKeterangan] = useState('');
 
-  useEffect(() => {
+  const fetchStations = () => {
     getStationsApi().then((res) => {
       const data = res.data.data;
       setStations(data);
-      if (data.length > 0) {
-        setSelectedStation(data[0].id);
-      }
-    });
+      setSelectedStation((current) => data.some((station) => String(station.id) === String(current))
+        ? current : data[0]?.id || '');
+    }).catch(() => toast.error('Gagal memuat stasiun.'));
+  };
+
+  useEffect(() => {
+    fetchStations();
   }, []);
 
   const fetchPoints = (stationId) => {
-    if (!stationId) return;
+    if (!stationId) {
+      setPoints([]);
+      return;
+    }
     setLoading(true);
     getCCTVPointsByStationApi(stationId)
       .then((res) => setPoints(res.data.data))
@@ -60,12 +69,17 @@ const CCTVMasterPage = () => {
   const handleOpenAdd = () => {
     setEditingPoint(null);
     setNamaTitik('');
-    setNomorUrut(points.length + 1);
+    setNomorUrut(Math.max(0, ...points.map((point) => point.nomor_urut)) + 1);
     setMerk('');
     setModelCctv('');
     setJenis('');
     setTipeLokasi('');
     setResolusi('');
+    setJumlahKamera(1);
+    setUnitPengelola('');
+    setKategori('');
+    setFungsiAi('');
+    setKeterangan('');
     setShowModal(true);
   };
 
@@ -75,9 +89,14 @@ const CCTVMasterPage = () => {
     setNomorUrut(point.nomor_urut);
     setMerk(point.merk || '');
     setModelCctv(point.model_cctv || '');
-    setJenis(point.jenis || '');
+    setJenis(CCTV_TYPES.includes(point.jenis) ? point.jenis : '');
     setTipeLokasi(point.tipe_lokasi || '');
     setResolusi(point.resolusi || '');
+    setJumlahKamera(point.jumlah_kamera || 1);
+    setUnitPengelola(point.unit_pengelola || '');
+    setKategori(point.kategori || '');
+    setFungsiAi(point.fungsi_ai || '');
+    setKeterangan(point.keterangan || '');
     setShowModal(true);
   };
 
@@ -85,12 +104,17 @@ const CCTVMasterPage = () => {
     e.preventDefault();
     const payload = {
       nama_titik: namaTitik,
-      nomor_urut: parseInt(nomorUrut),
+      nomor_urut: Number(nomorUrut),
       merk,
       model_cctv: modelCctv,
       jenis,
       tipe_lokasi: tipeLokasi,
-      resolusi
+      resolusi,
+      jumlah_kamera: Number(jumlahKamera),
+      unit_pengelola: unitPengelola,
+      kategori,
+      fungsi_ai: fungsiAi,
+      keterangan,
     };
     try {
       if (editingPoint) {
@@ -111,67 +135,13 @@ const CCTVMasterPage = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Apakah Anda yakin ingin menonaktifkan titik CCTV ini?')) return;
+    if (!window.confirm('Hapus titik CCTV ini secara permanen?')) return;
     try {
       await deleteCCTVPointApi(id);
-      toast.success('Titik CCTV dinonaktifkan.');
-      fetchPoints(selectedStation);
-    } catch {
-      toast.error('Gagal menghapus.');
-    }
-  };
-
-  const handleOpenImport = () => {
-    setImportFile(null);
-    setPreviewData([]);
-    setImportErrors([]);
-    setShowImportModal(true);
-  };
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImportFile(file);
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        const bstr = evt.target.result;
-        const wb = xlsx.read(bstr, { type: 'binary' });
-        const wsname = wb.SheetNames[0];
-        const ws = wb.Sheets[wsname];
-        const data = xlsx.utils.sheet_to_json(ws);
-        setPreviewData(data.slice(0, 5));
-      };
-      reader.readAsBinaryString(file);
-    }
-  };
-
-  const handleImportSubmit = async () => {
-    if (!importFile) {
-      toast.error('Pilih file terlebih dahulu.');
-      return;
-    }
-    setImporting(true);
-    setImportErrors([]);
-    const formData = new FormData();
-    formData.append('file', importFile);
-    formData.append('station_id', selectedStation);
-    
-    try {
-      const res = await importCCTVPointsApi(formData);
-      toast.success(res.data.message || 'Impor selesai.');
-      if (res.data.data && res.data.data.errors && res.data.data.errors.length > 0) {
-        setImportErrors(res.data.data.errors);
-      } else {
-        setShowImportModal(false);
-      }
+      toast.success('Titik CCTV dihapus.');
       fetchPoints(selectedStation);
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Gagal mengimpor data.');
-      if (err.response?.data?.data?.errors) {
-        setImportErrors(err.response.data.data.errors);
-      }
-    } finally {
-      setImporting(false);
+      toast.error(err.response?.data?.message || 'Gagal menghapus titik CCTV.');
     }
   };
 
@@ -183,8 +153,8 @@ const CCTVMasterPage = () => {
           <p className="page-subtitle">Kelola daftar lokasi dan posisi kamera CCTV per stasiun</p>
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={handleOpenImport} className="btn btn-secondary" disabled={!selectedStation}>
-            <FiUpload /> Impor
+          <button onClick={() => setShowImportModal(true)} className="btn btn-secondary">
+            <FiUpload /> Impor Excel KAI
           </button>
           <button onClick={handleOpenAdd} className="btn btn-primary" disabled={!selectedStation}>
             <FiPlus /> Tambah Titik CCTV
@@ -194,19 +164,24 @@ const CCTVMasterPage = () => {
 
       <div className="card" style={{ marginBottom: '20px' }}>
         <div className="form-group" style={{ marginBottom: 0, maxWidth: '300px' }}>
-          <label className="form-label">Pilih Stasiun</label>
+          <label className="form-label" htmlFor="cctv-station">Pilih Stasiun</label>
           <select
+            id="cctv-station"
             className="form-control"
             value={selectedStation}
             onChange={(e) => setSelectedStation(e.target.value)}
           >
             {stations.map((st) => (
               <option key={st.id} value={st.id}>
-                {st.nama_stasiun} ({st.business_area})
+                {st.nama_stasiun}
               </option>
             ))}
           </select>
         </div>
+        <p className="page-subtitle" style={{ marginTop: '12px' }}>
+          {points.length} kelompok lokasi, {points.reduce((sum, point) => sum + (point.jumlah_kamera || 1), 0)} kamera.
+          Setiap kelompok menjadi satu baris pemeriksaan.
+        </p>
       </div>
 
       {loading ? (
@@ -217,9 +192,13 @@ const CCTVMasterPage = () => {
             <thead>
               <tr>
                 <th style={{ width: '80px' }}>No. Urut</th>
-                <th>Nama Titik CCTV</th>
-                <th>Jenis</th>
-                <th>Lokasi</th>
+                <th>Penempatan / Objek Pantau</th>
+                <th>Unit Pengelola</th>
+                <th>Kategori</th>
+                <th>Jenis CCTV</th>
+                <th>Merek</th>
+                <th>Fungsi AI</th>
+                <th>Jumlah Kamera</th>
                 <th style={{ textAlign: 'center', width: '120px' }}>Aksi</th>
               </tr>
             </thead>
@@ -227,9 +206,15 @@ const CCTVMasterPage = () => {
               {points.map((p) => (
                 <tr key={p.id}>
                   <td style={{ fontWeight: '700' }}>{p.nomor_urut}</td>
-                  <td>{p.nama_titik}</td>
-                  <td>{p.jenis ? p.jenis.toUpperCase() : '-'}</td>
-                  <td>{p.tipe_lokasi ? (p.tipe_lokasi === 'indoor' ? 'Indoor' : 'Outdoor') : '-'}</td>
+                  <td style={{ minWidth: '200px' }}>
+                    {p.nama_titik}
+                  </td>
+                  <td>{p.unit_pengelola || '-'}</td>
+                  <td>{p.kategori || '-'}</td>
+                  <td>{p.jenis || '-'}</td>
+                  <td>{p.merk || '-'}</td>
+                  <td>{p.fungsi_ai || '-'}</td>
+                  <td>{p.jumlah_kamera || 1}</td>
                   <td style={{ textAlign: 'center' }}>
                     <button
                       onClick={() => handleOpenEdit(p)}
@@ -267,6 +252,8 @@ const CCTVMasterPage = () => {
                 <label className="form-label">Nomor Urut</label>
                 <input
                   type="number"
+                  min="1"
+                  step="1"
                   className="form-control"
                   value={nomorUrut}
                   onChange={(e) => setNomorUrut(e.target.value)}
@@ -274,7 +261,7 @@ const CCTVMasterPage = () => {
                 />
               </div>
               <div className="form-group">
-                <label className="form-label">Nama Titik CCTV</label>
+                <label className="form-label">Penempatan / Objek Pantau</label>
                 <input
                   type="text"
                   className="form-control"
@@ -285,7 +272,7 @@ const CCTVMasterPage = () => {
                 />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+              <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Merk (Opsional)</label>
                   <input
@@ -308,7 +295,7 @@ const CCTVMasterPage = () => {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+              <div className="form-row">
                 <div className="form-group">
                   <label className="form-label">Jenis Kamera</label>
                   <select
@@ -317,11 +304,7 @@ const CCTVMasterPage = () => {
                     onChange={(e) => setJenis(e.target.value)}
                   >
                     <option value="">Pilih Jenis</option>
-                    <option value="dome">Dome</option>
-                    <option value="bullet">Bullet</option>
-                    <option value="ptz">PTZ</option>
-                    <option value="box">Box</option>
-                    <option value="lainnya">Lainnya</option>
+                    {CCTV_TYPES.map((type) => <option key={type} value={type}>{type}</option>)}
                   </select>
                 </div>
                 <div className="form-group">
@@ -349,6 +332,33 @@ const CCTVMasterPage = () => {
                 />
               </div>
 
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Jumlah Kamera dalam Kelompok</label>
+                  <input type="number" className="form-control" min="1" step="1" required value={jumlahKamera}
+                    onChange={(e) => setJumlahKamera(e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Unit Pemilik/Pengelola</label>
+                  <input className="form-control" maxLength={100} value={unitPengelola}
+                    onChange={(e) => setUnitPengelola(e.target.value)} />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label className="form-label">Kategori CCTV</label>
+                  <input className="form-control" maxLength={100} value={kategori} onChange={(e) => setKategori(e.target.value)} />
+                </div>
+                <div className="form-group">
+                  <label className="form-label">Fungsi AI</label>
+                  <input className="form-control" maxLength={255} value={fungsiAi} onChange={(e) => setFungsiAi(e.target.value)} />
+                </div>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Keterangan</label>
+                <textarea className="form-control" rows={3} value={keterangan} onChange={(e) => setKeterangan(e.target.value)} />
+              </div>
+
               <div className="modal-actions">
                 <button type="button" onClick={() => setShowModal(false)} className="btn btn-secondary">
                   Batal
@@ -362,78 +372,8 @@ const CCTVMasterPage = () => {
         </div>
       )}
 
-      {/* IMPORT MODAL */}
       {showImportModal && (
-        <div className="modal-overlay">
-          <div className="modal" style={{ maxWidth: '600px', width: '100%' }}>
-            <h2 className="modal-title">Impor Data Titik CCTV</h2>
-            <div className="form-group">
-              <label className="form-label">Upload File Excel (.xlsx) / CSV</label>
-              <input
-                type="file"
-                className="form-control"
-                accept=".xlsx, .xls, .csv"
-                onChange={handleFileChange}
-              />
-              <small style={{ color: 'var(--text-muted)', fontSize: '11px', marginTop: '4px', display: 'block' }}>
-                Format kolom wajib: Nomor Urut, Nama Titik.
-                <br />
-                Kolom opsional: Merk, Model CCTV, Jenis (dome/bullet/ptz/box), Lokasi (indoor/outdoor), Resolusi.
-              </small>
-            </div>
-
-            {previewData.length > 0 && (
-              <div className="form-group">
-                <label className="form-label">Preview Data (5 baris pertama)</label>
-                <div style={{ overflowX: 'auto', border: '1px solid var(--border-color)', borderRadius: '4px' }}>
-                  <table className="data-table" style={{ margin: 0 }}>
-                    <thead>
-                      <tr>
-                        {Object.keys(previewData[0]).map((key, i) => (
-                          <th key={i}>{key}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {previewData.map((row, i) => (
-                        <tr key={i}>
-                          {Object.values(row).map((val, j) => (
-                            <td key={j}>{val}</td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-
-            {importErrors.length > 0 && (
-              <div className="alert alert-danger" style={{ marginTop: '16px', background: '#fdf2f2', border: '1px solid #f9cccc', color: 'var(--status-danger)', padding: '12px', borderRadius: '4px' }}>
-                <p style={{ fontWeight: '600', marginBottom: '8px' }}>Terdapat Error pada Impor:</p>
-                <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '13px' }}>
-                  {importErrors.map((err, i) => (
-                    <li key={i}>{err}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            <div className="modal-actions" style={{ marginTop: '24px' }}>
-              <button type="button" onClick={() => setShowImportModal(false)} className="btn btn-secondary">
-                Batal
-              </button>
-              <button 
-                type="button" 
-                onClick={handleImportSubmit} 
-                className="btn btn-primary"
-                disabled={!importFile || importing}
-              >
-                {importing ? 'Mengimpor...' : 'Mulai Impor'}
-              </button>
-            </div>
-          </div>
-        </div>
+        <InventoryImportModal onClose={() => setShowImportModal(false)} onImported={() => { fetchStations(); fetchPoints(selectedStation); }} />
       )}
     </div>
 

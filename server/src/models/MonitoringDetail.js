@@ -47,6 +47,14 @@ const MonitoringDetail = sequelize.define('MonitoringDetail', {
     type: DataTypes.ENUM('V', 'X', '-'),
     defaultValue: '-',
   },
+  m5_berfungsi: {
+    type: DataTypes.ENUM('V', 'X', '-'),
+    defaultValue: '-',
+  },
+  m5_terbackup: {
+    type: DataTypes.ENUM('V', 'X', '-'),
+    defaultValue: '-',
+  },
 }, {
   tableName: 'monitoring_details',
   indexes: [
