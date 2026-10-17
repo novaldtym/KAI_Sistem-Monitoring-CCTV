@@ -11,7 +11,6 @@ const User = sequelize.define('User', {
   nipp: {
     type: DataTypes.STRING(10),
     allowNull: false,
-    unique: true,
   },
   nama: {
     type: DataTypes.STRING(100),
@@ -19,7 +18,6 @@ const User = sequelize.define('User', {
   },
   email: {
     type: DataTypes.STRING(100),
-    unique: true,
   },
   password_hash: {
     type: DataTypes.STRING(255),
@@ -38,6 +36,18 @@ const User = sequelize.define('User', {
   },
 }, {
   tableName: 'users',
+  indexes: [
+    {
+      unique: true,
+      fields: ['nipp'],
+      name: 'uq_users_nipp',
+    },
+    {
+      unique: true,
+      fields: ['email'],
+      name: 'uq_users_email',
+    },
+  ],
 });
 
 // Hash password before save

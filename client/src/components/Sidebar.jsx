@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getPendingCountApi } from '../services/api';
 import {
@@ -15,7 +15,18 @@ import {
 const Sidebar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [pendingCount, setPendingCount] = useState(0);
+
+  const isReportsActive =
+    location.pathname === '/reports' ||
+    (location.pathname.startsWith('/reports/') &&
+      location.pathname !== '/reports/new' &&
+      !location.pathname.endsWith('/edit'));
+
+  const isInputMonitoringActive =
+    location.pathname === '/reports/new' ||
+    location.pathname.endsWith('/edit');
 
   useEffect(() => {
     if (user && user.role === 'assistant_manager') {
@@ -45,13 +56,20 @@ const Sidebar = () => {
           Dashboard
         </NavLink>
 
-        <NavLink to="/reports" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+        <NavLink
+          to="/reports"
+          end
+          className={() => `nav-link ${isReportsActive ? 'active' : ''}`}
+        >
           <span className="icon"><FiFileText /></span>
           Daftar Laporan
         </NavLink>
 
         {user?.role === 'petugas' && (
-          <NavLink to="/reports/new" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+          <NavLink
+            to="/reports/new"
+            className={() => `nav-link ${isInputMonitoringActive ? 'active' : ''}`}
+          >
             <span className="icon"><FiPlusCircle /></span>
             Input Monitoring
           </NavLink>
