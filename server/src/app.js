@@ -8,6 +8,7 @@ const errorHandler = require('./middleware/errorHandler');
 
 // Route imports
 const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/users');
 const stationRoutes = require('./routes/stations');
 const cctvPointRoutes = require('./routes/cctvPoints');
 const reportRoutes = require('./routes/reports');
@@ -25,6 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/stations', stationRoutes);
 app.use('/api/cctv-points', cctvPointRoutes);
 app.use('/api/reports', reportRoutes);

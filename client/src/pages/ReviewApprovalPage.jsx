@@ -56,8 +56,8 @@ const ReviewApprovalPage = () => {
           <div className="spinner"></div>
         </div>
       ) : reports.length > 0 ? (
-        <div className="table-container">
-          <table className="data-table">
+        <div className="table-container mobile-card-container">
+          <table className="data-table mobile-cards">
             <thead>
               <tr>
                 <th>No. Ref</th>
@@ -71,16 +71,16 @@ const ReviewApprovalPage = () => {
             <tbody>
               {reports.map((r) => (
                 <tr key={r.id}>
-                  <td style={{ fontWeight: "600" }}>{r.no_ref || "-"}</td>
-                  <td>{r.station?.nama_stasiun}</td>
-                  <td>
+                  <td data-label="No. Ref" style={{ fontWeight: "600" }}>{r.no_ref || "-"}</td>
+                  <td data-label="Stasiun">{r.station?.nama_stasiun}</td>
+                  <td data-label="Periode">
                     {MONTHS[r.bulan - 1]} {r.tahun}
                   </td>
-                  <td>
+                  <td data-label="Petugas">
                     {r.createdBy?.nama} (NIPP: {r.createdBy?.nipp})
                   </td>
-                  <td>{formatSubmitDate(r.updatedAt)}</td>
-                  <td style={{ textAlign: "center" }}>
+                  <td data-label="Tanggal Submit">{formatSubmitDate(r.updatedAt)}</td>
+                  <td data-label="Tindakan" style={{ textAlign: "center" }}>
                     <Link
                       to={`/reports/${r.id}`}
                       className="btn btn-secondary btn-sm"

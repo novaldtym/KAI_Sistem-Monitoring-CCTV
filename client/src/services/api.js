@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -40,6 +40,11 @@ api.interceptors.response.use(
 export const loginApi = (data) => api.post('/auth/login', data);
 export const getMeApi = () => api.get('/auth/me');
 export const getOfficersApi = () => api.get('/auth/officers');
+export const changePasswordApi = (data) => api.patch('/auth/password', data);
+export const getUsersApi = () => api.get('/users');
+export const createUserApi = (data) => api.post('/users', data);
+export const updateUserApi = (id, data) => api.put(`/users/${id}`, data);
+export const deleteUserApi = (id) => api.delete(`/users/${id}`);
 
 // --- Dashboard APIs ---
 export const getDashboardSummaryApi = () => api.get('/dashboard/summary');

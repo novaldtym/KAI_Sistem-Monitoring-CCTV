@@ -1,9 +1,18 @@
-const { MonitoringReport } = require('../models');
+const { MonitoringReport, Station, CCTVPoint, User } = require('../models');
 const { jakartaDate } = require('../services/reportCalendar');
 const { getStationInspection } = require('../services/stationInspection');
 
 exports.getSummary = async (req, res, next) => {
   try {
+    if (req.user.role === 'admin') {
+      const [stations, groups, cameras, users] = await Promise.all([
+        Station.count({ where: { is_active: true } }),
+        CCTVPoint.count({ where: { is_active: true } }),
+        CCTVPoint.sum('jumlah_kamera', { where: { is_active: true } }),
+        User.count(),
+      ]);
+      return res.json({ data: { inventory: { stations, groups, cameras: cameras || 0, users } } });
+    }
     const where = {};
     if (req.user.role === 'petugas') {
       where.created_by = req.user.id;

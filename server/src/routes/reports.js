@@ -3,9 +3,10 @@ const reportController = require('../controllers/reportController');
 const pdfService = require('../services/pdfService');
 const { canReadReport } = require('../policies/reportAccess');
 const { authenticate, authorize } = require('../middleware/auth');
+const { REVIEW_ROLES, REPORT_ROLES } = require('../policies/roles');
 const { MonitoringReport, MonitoringDetail, CCTVPoint, Station, User, ApprovalLog } = require('../models');
 
-router.use(authenticate);
+router.use(authenticate, authorize(...REPORT_ROLES));
 
 router.get('/', reportController.getAll);
 router.get('/calendar', reportController.calendar);
@@ -13,8 +14,8 @@ router.get('/:id', reportController.getById);
 router.post('/', authorize('petugas'), reportController.create);
 router.put('/:id', authorize('petugas'), reportController.update);
 router.patch('/:id/submit', authorize('petugas'), reportController.submit);
-router.patch('/:id/approve', authorize('assistant_manager'), reportController.approve);
-router.patch('/:id/reject', authorize('assistant_manager'), reportController.reject);
+router.patch('/:id/approve', authorize(...REVIEW_ROLES), reportController.approve);
+router.patch('/:id/reject', authorize(...REVIEW_ROLES), reportController.reject);
 
 // PDF Generation
 router.get('/:id/pdf', async (req, res, next) => {

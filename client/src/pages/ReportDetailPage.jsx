@@ -11,6 +11,8 @@ import toast from "react-hot-toast";
 import { FiArrowLeft, FiDownload, FiEdit, FiCheck, FiX } from "react-icons/fi";
 
 import { pointLabel } from "../utils/reportPresentation";
+import { REVIEW_ROLES } from "../constants/roles";
+import MobileMonitoringList from "../components/MobileMonitoringList";
 
 const ReportDetailPage = () => {
   const { id } = useParams();
@@ -99,7 +101,7 @@ const ReportDetailPage = () => {
     }
   };
 
-  const isManager = user?.role === "assistant_manager";
+  const isManager = REVIEW_ROLES.includes(user?.role);
   const canApprove = isManager && report?.status === "submitted";
 
   if (loading) {
@@ -120,14 +122,7 @@ const ReportDetailPage = () => {
 
   return (
     <div className="fade-in">
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "24px",
-        }}
-      >
+      <div className="report-detail-header">
         <div>
           <button
             onClick={() => navigate(-1)}
@@ -145,7 +140,7 @@ const ReportDetailPage = () => {
           </p>
         </div>
 
-        <div style={{ display: "flex", gap: "10px" }}>
+        <div className="toolbar-actions">
           {(report.status === "draft" || report.status === "rejected") &&
             user?.role === "petugas" && (
               <Link
@@ -210,8 +205,11 @@ const ReportDetailPage = () => {
         </div>
       </div>
 
+      <MobileMonitoringList weeks={report.calendar?.weeks || []} station={report.station} readOnly
+        points={(report.details || []).map((detail) => detail.cctvPoint).filter(Boolean)}
+        valuesFor={(point) => report.details.find((detail) => detail.cctv_point_id === point.id) || {}} />
       <div
-        className="table-container monitoring-grid"
+        className="table-container monitoring-grid desktop-monitoring"
         style={{ marginBottom: "24px" }}
       >
         <table>
@@ -274,10 +272,8 @@ const ReportDetailPage = () => {
 
       {/* CATATAN & APPROVAL HISTORY */}
       <div
+        className="report-detail-sections"
         style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "20px",
           marginBottom: canApprove ? "24px" : "0",
         }}
       >
@@ -339,14 +335,7 @@ const ReportDetailPage = () => {
 
       {/* APPROVE / REJECT ACTIONS — bottom right, only for manager when status is submitted */}
       {canApprove && (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-end",
-            gap: "10px",
-            marginTop: "8px",
-          }}
-        >
+        <div className="report-approval-actions">
           <button
             onClick={() => {
               setModalType("approve");

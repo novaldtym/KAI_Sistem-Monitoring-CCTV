@@ -12,3 +12,11 @@
 .report-form .monitoring-grid table { min-width: 1000px; }
 .report-form .monitoring-grid .col-nama { white-space: normal; overflow-wrap: anywhere; min-width: 200px; }
 .report-form .report-week-progress { font-size: 11px; }
+@media (max-width: 600px) {
+  .report-weeks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .report-week { padding: 10px; min-width: 0; }
+  .report-form-actions > .btn { flex: 1 1 180px; }
+  .report-pagination { justify-content: space-between; gap: 10px; }
+  .report-pagination > span { flex-basis: 100%; }
+  .report-form .monitoring-grid .col-nama { min-width: 180px; }
+}

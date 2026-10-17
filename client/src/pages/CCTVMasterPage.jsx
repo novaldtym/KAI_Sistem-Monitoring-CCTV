@@ -152,7 +152,7 @@ const CCTVMasterPage = () => {
           <h1 className="page-title">Master Data Titik CCTV</h1>
           <p className="page-subtitle">Kelola daftar lokasi dan posisi kamera CCTV per stasiun</p>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div className="toolbar-actions">
           <button onClick={() => setShowImportModal(true)} className="btn btn-secondary">
             <FiUpload /> Impor Excel KAI
           </button>
@@ -187,8 +187,8 @@ const CCTVMasterPage = () => {
       {loading ? (
         <div className="loading-spinner"><div className="spinner"></div></div>
       ) : points.length > 0 ? (
-        <div className="table-container">
-          <table className="data-table">
+        <div className="table-container mobile-card-container">
+          <table className="data-table mobile-cards">
             <thead>
               <tr>
                 <th style={{ width: '80px' }}>No. Urut</th>
@@ -205,32 +205,33 @@ const CCTVMasterPage = () => {
             <tbody>
               {points.map((p) => (
                 <tr key={p.id}>
-                  <td style={{ fontWeight: '700' }}>{p.nomor_urut}</td>
-                  <td style={{ minWidth: '200px' }}>
+                  <td data-label="No. Urut" style={{ fontWeight: '700' }}>{p.nomor_urut}</td>
+                  <td data-label="Penempatan">
                     {p.nama_titik}
                   </td>
-                  <td>{p.unit_pengelola || '-'}</td>
-                  <td>{p.kategori || '-'}</td>
-                  <td>{p.jenis || '-'}</td>
-                  <td>{p.merk || '-'}</td>
-                  <td>{p.fungsi_ai || '-'}</td>
-                  <td>{p.jumlah_kamera || 1}</td>
-                  <td style={{ textAlign: 'center' }}>
+                  <td data-label="Unit">{p.unit_pengelola || '-'}</td>
+                  <td data-label="Kategori">{p.kategori || '-'}</td>
+                  <td data-label="Jenis">{p.jenis || '-'}</td>
+                  <td data-label="Merek">{p.merk || '-'}</td>
+                  <td data-label="Fungsi AI">{p.fungsi_ai || '-'}</td>
+                  <td data-label="Kamera">{p.jumlah_kamera || 1}</td>
+                  <td data-label="Aksi" style={{ textAlign: 'center' }}><div className="table-row-actions">
                     <button
                       onClick={() => handleOpenEdit(p)}
                       className="btn btn-secondary btn-sm btn-icon"
-                      style={{ marginRight: '6px' }}
+                      aria-label={`Edit ${p.nama_titik}`}
                     >
                       <FiEdit2 />
                     </button>
                     <button
                       onClick={() => handleDelete(p.id)}
                       className="btn btn-secondary btn-sm btn-icon"
+                      aria-label={`Hapus ${p.nama_titik}`}
                       style={{ color: 'var(--status-danger)' }}
                     >
                       <FiTrash2 />
                     </button>
-                  </td>
+                  </div></td>
                 </tr>
               ))}
             </tbody>

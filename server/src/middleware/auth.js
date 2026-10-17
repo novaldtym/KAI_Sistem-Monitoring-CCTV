@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { User } = require('../models');
+const { ROLES } = require('../policies/roles');
 
 const authenticate = async (req, res, next) => {
   try {
@@ -12,8 +13,12 @@ const authenticate = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
     const user = await User.findByPk(decoded.id);
-    if (!user || !user.is_active) {
+    if (!user || !user.is_active || !ROLES.includes(user.role)) {
       return res.status(401).json({ message: 'User tidak ditemukan atau nonaktif.' });
+    }
+
+    if ((decoded.tokenVersion ?? 0) !== user.token_version) {
+      return res.status(401).json({ message: 'Sesi sudah tidak berlaku. Silakan login kembali.' });
     }
 
     req.user = user;

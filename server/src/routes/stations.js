@@ -8,9 +8,9 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.use(authenticate);
 router.get('/', stationController.getAll);
 router.get('/:id', stationController.getById);
-router.post('/', authorize('assistant_manager'), stationController.create);
-router.post('/import', authorize('assistant_manager'), upload.single('file'), stationController.importStations);
-router.put('/:id', authorize('assistant_manager'), stationController.update);
-router.delete('/:id', authorize('assistant_manager'), stationController.remove);
+router.post('/', authorize('admin'), stationController.create);
+router.post('/import', authorize('admin'), upload.single('file'), stationController.importStations);
+router.put('/:id', authorize('admin'), stationController.update);
+router.delete('/:id', authorize('admin'), stationController.remove);
 
 module.exports = router;

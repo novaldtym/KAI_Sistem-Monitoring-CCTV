@@ -10,6 +10,9 @@ import ReportDetailPage from './pages/ReportDetailPage';
 import ReviewApprovalPage from './pages/ReviewApprovalPage';
 import CCTVMasterPage from './pages/CCTVMasterPage';
 import StationMasterPage from './pages/StationMasterPage';
+import UserMasterPage from './pages/UserMasterPage';
+import ChangePasswordPage from './pages/ChangePasswordPage';
+import { REPORT_ROLES, REVIEW_ROLES } from './constants/roles';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
@@ -47,8 +50,9 @@ function App() {
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<DashboardPage />} />
 
-            <Route path="reports" element={<ReportListPage />} />
-            <Route path="reports/:id" element={<ReportDetailPage />} />
+            <Route path="reports" element={<ProtectedRoute allowedRoles={REPORT_ROLES}><ReportListPage /></ProtectedRoute>} />
+            <Route path="reports/:id" element={<ProtectedRoute allowedRoles={REPORT_ROLES}><ReportDetailPage /></ProtectedRoute>} />
+            <Route path="account/password" element={<ChangePasswordPage />} />
 
             <Route
               path="reports/new"
@@ -70,7 +74,7 @@ function App() {
             <Route
               path="review"
               element={
-                <ProtectedRoute allowedRoles={['assistant_manager']}>
+                <ProtectedRoute allowedRoles={REVIEW_ROLES}>
                   <ReviewApprovalPage />
                 </ProtectedRoute>
               }
@@ -79,7 +83,7 @@ function App() {
             <Route
               path="master/cctv"
               element={
-                <ProtectedRoute allowedRoles={['assistant_manager']}>
+                <ProtectedRoute allowedRoles={['admin']}>
                   <CCTVMasterPage />
                 </ProtectedRoute>
               }
@@ -87,11 +91,12 @@ function App() {
             <Route
               path="master/stations"
               element={
-                <ProtectedRoute allowedRoles={['assistant_manager']}>
+                <ProtectedRoute allowedRoles={['admin']}>
                   <StationMasterPage />
                 </ProtectedRoute>
               }
             />
+            <Route path="master/users" element={<ProtectedRoute allowedRoles={['admin']}><UserMasterPage /></ProtectedRoute>} />
           </Route>
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

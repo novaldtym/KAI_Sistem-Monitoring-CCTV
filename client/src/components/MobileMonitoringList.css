@@ -1,0 +1,15 @@
+.mobile-monitoring { display: none; }
+@media (max-width: 600px) {
+  .desktop-monitoring { display: none; }
+  .mobile-monitoring { display: block; margin: 20px 0; }
+  .mobile-monitoring-period { margin-bottom: 16px; }
+  .mobile-monitoring-period p { margin-top: 10px; font-size: 13px; color: var(--text-secondary); }
+  .mobile-monitoring-groups { display: grid; gap: 12px; }
+  .mobile-monitoring-group h3 { font-size: 14px; font-weight: 600; margin-bottom: 16px; overflow-wrap: anywhere; }
+  .mobile-monitoring-statuses { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .mobile-monitoring-status { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; }
+  .mobile-monitoring-status .status-toggle { flex-shrink: 0; }
+  .monitoring-value { font-size: 22px; font-weight: 700; }
+  .monitoring-value.status-v { color: var(--status-success); }
+  .monitoring-value.status-x { color: var(--status-danger); }
+}

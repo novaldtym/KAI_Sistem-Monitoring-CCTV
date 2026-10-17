@@ -83,6 +83,14 @@ export default function StationInspectionMap() {
   const [error, setError] = useState('');
   const [revision, setRevision] = useState(0);
   const [selectedId, setSelectedId] = useState(null);
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    if (loading || !data || !window.matchMedia('(max-width: 700px)').matches) return;
+    const canvas = canvasRef.current;
+    const svg = canvas?.querySelector('svg');
+    if (svg) canvas.scrollTop = Math.max(0, 340 * svg.getBoundingClientRect().height / HEIGHT - 100);
+  }, [loading, data]);
 
   useEffect(() => {
     let active = true;
@@ -164,7 +172,8 @@ export default function StationInspectionMap() {
             {week === 'month' ? 'Bulanan menghitung semua minggu yang sudah dimulai. ' : ''}
             Hijau jika Berfungsi dan Terbackup sudah terisi V/X pada seluruh kelompok. Merah jika masih ada yang kosong.
           </p>
-          <div className="inspection-map-canvas" tabIndex={0} role="region" aria-label="Diagram stasiun, dapat digeser ke samping pada layar kecil">
+          <p className="mobile-scroll-hint">Geser peta untuk melihat stasiun, lalu ketuk lingkaran stasiunnya.</p>
+          <div className="inspection-map-canvas" ref={canvasRef} tabIndex={0} role="region" aria-label="Diagram stasiun, dapat digeser pada layar kecil">
             <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} role="group" aria-label={`Peta pemeriksaan ${periodLabel}, ${scopeLabel}`}>
               <g className="inspection-tracks" aria-hidden="true">
                 <path className="double-track" d="M96 746 V340 H1274 M756 340 V286" />

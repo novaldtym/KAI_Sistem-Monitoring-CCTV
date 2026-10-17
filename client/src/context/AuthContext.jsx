@@ -1,31 +1,35 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { loginApi, getMeApi } from '../services/api';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('user');
-    return saved ? JSON.parse(saved) : null;
-  });
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(() => Boolean(localStorage.getItem('token')));
+
+  const logout = useCallback(() => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+    let active = true;
     if (token) {
       getMeApi()
         .then((res) => {
+          if (!active) return;
           setUser(res.data.user);
           localStorage.setItem('user', JSON.stringify(res.data.user));
         })
         .catch(() => {
-          logout();
+          if (active) logout();
         })
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
+        .finally(() => { if (active) setLoading(false); });
     }
-  }, []);
+    return () => { active = false; };
+  }, [logout]);
 
   const login = async (nipp, password) => {
     const res = await loginApi({ nipp, password });
@@ -36,14 +40,14 @@ export const AuthProvider = ({ children }) => {
     return userData;
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setUser(null);
+  const refreshUser = async () => {
+    const response = await getMeApi();
+    setUser(response.data.user);
+    localStorage.setItem('user', JSON.stringify(response.data.user));
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, loading, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

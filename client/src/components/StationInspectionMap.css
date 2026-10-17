@@ -83,4 +83,8 @@
   .inspection-map-controls input { min-width: 0; }
   .inspection-map-weeks button { flex: 1 0 30%; }
   .inspection-map-legend { width: 100%; }
+  .inspection-map-canvas { max-height: 62dvh; overflow: auto; overscroll-behavior: contain; border: 1px solid var(--border-color); border-radius: 8px; }
+  .inspection-map-canvas svg { min-width: 1180px; }
+  .station-inspection-dialog { padding: 18px; max-height: calc(100dvh - 32px); }
+  .inspection-map-detail-weeks { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
 }

@@ -94,7 +94,7 @@ const StationMasterPage = () => {
           <h1 className="page-title">Master Data Stasiun</h1>
           <p className="page-subtitle">Kelola unit stasiun kerja KAI</p>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div className="toolbar-actions">
           <button onClick={() => setShowImportModal(true)} className="btn btn-secondary">
             <FiUpload /> Impor Excel KAI
           </button>
@@ -106,8 +106,8 @@ const StationMasterPage = () => {
       {loading ? (
         <div className="loading-spinner"><div className="spinner"></div></div>
       ) : stations.length > 0 ? (
-        <div className="table-container">
-          <table className="data-table">
+        <div className="table-container mobile-card-container">
+          <table className="data-table mobile-cards">
             <thead>
               <tr>
                 <th style={{ width: '64px' }}>No.</th>
@@ -122,28 +122,29 @@ const StationMasterPage = () => {
             <tbody>
               {stations.map((st, index) => (
                 <tr key={st.id}>
-                  <td>{index + 1}</td>
-                  <td>{st.wilayah || '-'}</td>
-                  <td>{st.nama_stasiun}</td>
-                  <td>{st.kode_stasiun || '-'}</td>
-                  <td>{st.jumlah_kelompok ?? st.cctvPoints?.length ?? 0}</td>
-                  <td>{st.jumlah_kamera ?? 0}</td>
-                  <td style={{ textAlign: 'center' }}>
+                  <td data-label="No.">{index + 1}</td>
+                  <td data-label="Wilayah">{st.wilayah || '-'}</td>
+                  <td data-label="Stasiun">{st.nama_stasiun}</td>
+                  <td data-label="Kode">{st.kode_stasiun || '-'}</td>
+                  <td data-label="Kelompok">{st.jumlah_kelompok ?? st.cctvPoints?.length ?? 0}</td>
+                  <td data-label="Kamera">{st.jumlah_kamera ?? 0}</td>
+                  <td data-label="Aksi" style={{ textAlign: 'center' }}><div className="table-row-actions">
                     <button
                       onClick={() => handleOpenEdit(st)}
                       className="btn btn-secondary btn-sm btn-icon"
-                      style={{ marginRight: '6px' }}
+                      aria-label={`Edit ${st.nama_stasiun}`}
                     >
                       <FiEdit2 />
                     </button>
                     <button
                       onClick={() => handleDelete(st.id)}
                       className="btn btn-secondary btn-sm btn-icon"
+                      aria-label={`Hapus ${st.nama_stasiun}`}
                       style={{ color: 'var(--status-danger)' }}
                     >
                       <FiTrash2 />
                     </button>
-                  </td>
+                  </div></td>
                 </tr>
               ))}
             </tbody>

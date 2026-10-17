@@ -102,14 +102,32 @@ npm run dev
 
 ---
 
-## 🔑 Akun Login Bawaan (Default Users)
+## 🔑 Role dan Akun Pengguna
 
-Sistem sudah dilengkapi 2 akun untuk pengujian role:
+| Role | Hak akses |
+|------|-----------|
+| Manager | Membaca laporan seluruh petugas, mencetak PDF, approve/reject, dan melihat peta pemeriksaan |
+| Asisten Manager | Hak pemeriksaan dan approval yang sama dengan Manager |
+| Petugas | Membuat, mengedit, dan mengirim laporan sendiri serta melihat peta pemeriksaan |
+| Admin | Impor Excel, CRUD master stasiun/CCTV, serta membuat, mengedit, menonaktifkan, dan menghapus user |
 
-| Role | NIPP | Password | Nama | Jabatan | Hak Akses |
-|------|------|----------|------|---------|-----------|
-| **Petugas** | `12345` | `12345` | PETUGAS 1 | Petugas IT Support | Input data mingguan, simpan draft, edit, submit laporan |
-| **Assistant Manager** | `99999` | `12345` | MANAGER 1 | Asst. Manager IT Support 1 | Review laporan, Approve/Reject + komentar, Cetak PDF, CRUD Master Data CCTV & Stasiun |
+Pembatasan diterapkan di API dan halaman aplikasi. Manager dan Asisten Manager tidak memiliki akses impor atau pengelolaan user. Admin tidak melakukan approval laporan.
+
+Untuk menambahkan akun awal tanpa menghapus database, siapkan file JSON lokal berisi daftar user, lalu jalankan dari folder `server`:
+
+```bash
+npm run setup:users -- "C:/lokasi/users.json"
+```
+
+Contoh isi file untuk akun Admin awal:
+
+```json
+[{ "nipp": "admin", "nama": "Admin", "role": "admin", "password": "admin123" }]
+```
+
+Nilai role di JSON adalah `manager`, `assistant_manager`, `petugas`, atau `admin`. Field `nipp` juga digunakan sebagai username untuk akun nonpegawai seperti Admin. Password awal user baru mengikuti `nipp` jika tidak diisi. Setup ulang mempertahankan password akun yang sudah ada. Simpan file akun di luar repo atau folder lokal yang diabaikan Git.
+
+Semua pengguna dapat mengganti password melalui menu **Ganti Password**, dengan password saat ini dan konfirmasi password baru (minimal 8 karakter). Perubahan password, reset password oleh Admin, perubahan role/username, atau penonaktifan akun membatalkan sesi lama. Akun yang memiliki riwayat laporan/approval tidak dapat dihapus; gunakan status Nonaktif. Akun Admin sendiri tidak dapat dihapus atau diturunkan rolenya dari halaman Kelola User.
 
 ---
 
@@ -127,7 +145,7 @@ Sistem sudah dilengkapi 2 akun untuk pengujian role:
 4. **Cetak PDF Formulir Monitoring**:
    - Menggunakan Puppeteer (Chromium Engine) merender HTML Handlebars template.
    - Memuat header logo KAI, metadata No Ref/Nomor/Versi, tabel empat atau lima minggu sesuai kalender, catatan, serta blok tanda tangan NIPP Asst. Manager & Petugas.
-5. **Master Data Management**: CRUD Stasiun dan Titik CCTV per stasiun.
+5. **Master Data Management**: Admin mengelola stasiun dan titik CCTV per stasiun, mengimpor Excel, serta mengelola akun pengguna.
 
 ---
 

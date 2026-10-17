@@ -1,6 +1,7 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
 const bcrypt = require('bcryptjs');
+const { ROLES } = require('../policies/roles');
 
 const User = sequelize.define('User', {
   id: {
@@ -9,7 +10,7 @@ const User = sequelize.define('User', {
     primaryKey: true,
   },
   nipp: {
-    type: DataTypes.STRING(10),
+    type: DataTypes.STRING(20),
     allowNull: false,
   },
   nama: {
@@ -24,7 +25,7 @@ const User = sequelize.define('User', {
     allowNull: false,
   },
   role: {
-    type: DataTypes.ENUM('petugas', 'assistant_manager'),
+    type: DataTypes.ENUM(...ROLES),
     allowNull: false,
   },
   jabatan: {
@@ -33,6 +34,11 @@ const User = sequelize.define('User', {
   is_active: {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
+  },
+  token_version: {
+    type: DataTypes.INTEGER.UNSIGNED,
+    allowNull: false,
+    defaultValue: 0,
   },
 }, {
   tableName: 'users',
@@ -51,8 +57,8 @@ const User = sequelize.define('User', {
 });
 
 // Hash password before save
-User.beforeCreate(async (user) => {
-  if (user.password_hash) {
+User.beforeSave(async (user) => {
+  if (user.changed('password_hash') && user.password_hash) {
     user.password_hash = await bcrypt.hash(user.password_hash, 12);
   }
 });
@@ -65,6 +71,7 @@ User.prototype.comparePassword = async function (password) {
 User.prototype.toJSON = function () {
   const values = { ...this.get() };
   delete values.password_hash;
+  delete values.token_version;
   return values;
 };
 

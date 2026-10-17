@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getPendingCountApi } from '../services/api';
+import { REPORT_ROLES, REVIEW_ROLES, ROLE_LABELS } from '../constants/roles';
 import {
   FiGrid,
   FiFileText,
@@ -10,9 +11,12 @@ import {
   FiVideo,
   FiMapPin,
   FiLogOut,
+  FiUsers,
+  FiKey,
+  FiX,
 } from 'react-icons/fi';
 
-const Sidebar = () => {
+const Sidebar = ({ isMobile, isOpen, navigationRef, onNavigate, onClose }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,7 +33,7 @@ const Sidebar = () => {
     location.pathname.endsWith('/edit');
 
   useEffect(() => {
-    if (user && user.role === 'assistant_manager') {
+    if (user && REVIEW_ROLES.includes(user.role)) {
       getPendingCountApi()
         .then((res) => setPendingCount(res.data.data.pendingCount))
         .catch(() => {});
@@ -37,18 +41,22 @@ const Sidebar = () => {
   }, [user]);
 
   const handleLogout = () => {
+    onNavigate();
     logout();
     navigate('/login');
   };
 
   return (
-    <aside className="sidebar">
+    <aside id="main-navigation" ref={navigationRef} className={`sidebar${isOpen ? ' is-open' : ''}`}
+      role={isMobile ? 'dialog' : undefined} aria-modal={isOpen ? true : undefined} aria-label="Menu navigasi"
+      inert={isMobile && !isOpen ? true : undefined}>
       <div className="sidebar-header">
+        <button type="button" className="sidebar-close" onClick={onClose} aria-label="Tutup menu navigasi"><FiX aria-hidden="true" /></button>
         <img src="/logo-kai.webp" alt="PT Kereta Api Indonesia" className="sidebar-logo-img" />
         <div className="sidebar-logo-sub">MONITORING CCTV</div>
       </div>
 
-      <nav className="sidebar-nav">
+      <nav className="sidebar-nav" onClick={(event) => { if (event.target.closest('a')) onNavigate(); }}>
         <div className="nav-section-title">Menu Utama</div>
         
         <NavLink to="/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
@@ -56,14 +64,14 @@ const Sidebar = () => {
           Dashboard
         </NavLink>
 
-        <NavLink
+        {REPORT_ROLES.includes(user?.role) && <NavLink
           to="/reports"
           end
           className={() => `nav-link ${isReportsActive ? 'active' : ''}`}
         >
           <span className="icon"><FiFileText /></span>
           Daftar Laporan
-        </NavLink>
+        </NavLink>}
 
         {user?.role === 'petugas' && (
           <NavLink
@@ -75,7 +83,7 @@ const Sidebar = () => {
           </NavLink>
         )}
 
-        {user?.role === 'assistant_manager' && (
+        {REVIEW_ROLES.includes(user?.role) && (
           <NavLink to="/review" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
             <span className="icon"><FiCheckSquare /></span>
             Review & Approval
@@ -83,7 +91,7 @@ const Sidebar = () => {
           </NavLink>
         )}
 
-        {user?.role === 'assistant_manager' && (
+        {user?.role === 'admin' && (
           <>
             <div className="nav-section-title">Master Data</div>
             
@@ -96,8 +104,17 @@ const Sidebar = () => {
               <span className="icon"><FiMapPin /></span>
               Stasiun
             </NavLink>
+            <NavLink to="/master/users" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+              <span className="icon"><FiUsers /></span>
+              Kelola User
+            </NavLink>
           </>
         )}
+        <div className="nav-section-title">Akun</div>
+        <NavLink to="/account/password" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+          <span className="icon"><FiKey /></span>
+          Ganti Password
+        </NavLink>
       </nav>
 
       <div className="sidebar-footer">
@@ -108,7 +125,7 @@ const Sidebar = () => {
           <div>
             <div className="user-name">{user?.nama}</div>
             <div className="user-role">
-              {user?.role === 'assistant_manager' ? 'Assistant Manager' : 'Petugas'} ({user?.nipp})
+              {ROLE_LABELS[user?.role] || '-'} ({user?.nipp})
             </div>
           </div>
         </div>

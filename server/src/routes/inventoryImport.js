@@ -12,7 +12,7 @@ const upload = multer({
   },
 }).single('file');
 
-router.use(authenticate, authorize('assistant_manager'));
+router.use(authenticate, authorize('admin'));
 router.use((req, res, next) => upload(req, res, (error) => {
   if (!error) return next();
   res.status(error.code === 'LIMIT_FILE_SIZE' ? 413 : 400).json({

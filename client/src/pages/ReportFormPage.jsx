@@ -4,6 +4,7 @@ import { getStationsApi, getCCTVPointsByStationApi, createReportApi, updateRepor
   getReportByIdApi, submitReportApi, getReportCalendarApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import StatusToggle from '../components/StatusToggle';
+import MobileMonitoringList from '../components/MobileMonitoringList';
 import { MONTHS, emptyStatuses, statusValues, pointLabel, weekStateLabel } from '../utils/reportPresentation';
 import toast from 'react-hot-toast';
 import { FiSave, FiSend, FiArrowLeft } from 'react-icons/fi';
@@ -210,7 +211,10 @@ function ReportForm() {
       </div>
       <p className="report-form-notice">{points.length} kelompok lokasi · {points.reduce((sum, point) => sum + (point.jumlah_kamera || 1), 0)} kamera. Setiap kelompok memiliki status Berfungsi dan Terbackup.</p>
       {loading ? <div className="loading-spinner"><div className="spinner" /></div> : points.length > 0 ? <>
-        <div className="table-container monitoring-grid report-form-section">
+        <MobileMonitoringList weeks={weeks} points={visiblePoints} station={station}
+          valuesFor={(point) => detailsMap[point.id] || {}} disabled={disabled}
+          isWeekLocked={isWeekLocked} weekLockReason={weekLockReason} onChange={toggle} />
+        <div className="table-container monitoring-grid report-form-section desktop-monitoring">
           <table>
             <thead>
               <tr><th rowSpan={3}>No</th><th rowSpan={3} className="col-nama">Penempatan / Objek Pantau</th>

@@ -20,7 +20,7 @@ const LoginPage = () => {
       await login(nipp, password);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Gagal login. Periksa NIPP dan password Anda.');
+      setError(err.response?.data?.message || 'Gagal login. Periksa username dan password Anda.');
     } finally {
       setLoading(false);
     }
@@ -41,13 +41,16 @@ const LoginPage = () => {
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label className="form-label">NIPP (Nomor Induk Pegawai)</label>
+            <label className="form-label" htmlFor="login-username">Username / NIPP / NIPKWT</label>
             <div style={{ position: 'relative' }}>
               <input
+                id="login-username"
                 type="text"
+                autoComplete="username"
+                maxLength={20}
                 className="form-control"
                 style={{ paddingLeft: '38px' }}
-                placeholder="Masukkan NIPP (contoh: 30566)"
+                placeholder="Masukkan username atau nomor pegawai"
                 value={nipp}
                 onChange={(e) => setNipp(e.target.value)}
                 required
@@ -57,10 +60,12 @@ const LoginPage = () => {
           </div>
 
           <div className="form-group">
-            <label className="form-label">Password</label>
+            <label className="form-label" htmlFor="login-password">Password</label>
             <div style={{ position: 'relative' }}>
               <input
+                id="login-password"
                 type="password"
+                autoComplete="current-password"
                 className="form-control"
                 style={{ paddingLeft: '38px' }}
                 placeholder="Masukkan password"

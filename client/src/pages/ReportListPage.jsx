@@ -4,6 +4,7 @@ import { getReportsApi, getStationsApi, getOfficersApi, downloadReportPdfApi } f
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import { FiPlus, FiEye, FiEdit, FiDownload, FiFilter, FiRefreshCw } from 'react-icons/fi';
+import { REVIEW_ROLES } from '../constants/roles';
 
 const ReportListPage = () => {
   const { user } = useAuth();
@@ -27,7 +28,7 @@ const ReportListPage = () => {
 
   useEffect(() => {
     getStationsApi().then((res) => setStations(res.data.data));
-    if (user?.role === 'assistant_manager') {
+    if (REVIEW_ROLES.includes(user?.role)) {
       getOfficersApi().then((res) => setOfficers(res.data.data || [])).catch(() => {});
     }
   }, [user]);
@@ -142,7 +143,7 @@ const ReportListPage = () => {
           </select>
         </div>
 
-        {user?.role === 'assistant_manager' && (
+        {REVIEW_ROLES.includes(user?.role) && (
           <div className="form-group">
             <label className="form-label">Petugas Input</label>
             <select
@@ -172,8 +173,8 @@ const ReportListPage = () => {
       {loading ? (
         <div className="loading-spinner"><div className="spinner"></div></div>
       ) : reports.length > 0 ? (
-        <div className="table-container">
-          <table className="data-table">
+        <div className="table-container mobile-card-container">
+          <table className="data-table mobile-cards">
             <thead>
               <tr>
                 <th>No. Ref</th>
@@ -187,12 +188,12 @@ const ReportListPage = () => {
             <tbody>
               {reports.map((r) => (
                 <tr key={r.id}>
-                  <td style={{ fontWeight: '600' }}>{r.no_ref || '-'}</td>
-                  <td>{r.station?.nama_stasiun}</td>
-                  <td>{MONTHS[r.bulan - 1]} {r.tahun}</td>
-                  <td>{r.createdBy?.nama || '-'}</td>
-                  <td>{getStatusBadge(r.status)}</td>
-                  <td style={{ textAlign: 'center' }}>
+                  <td data-label="No. Ref" style={{ fontWeight: '600' }}>{r.no_ref || '-'}</td>
+                  <td data-label="Stasiun">{r.station?.nama_stasiun}</td>
+                  <td data-label="Periode">{MONTHS[r.bulan - 1]} {r.tahun}</td>
+                  <td data-label="Petugas">{r.createdBy?.nama || '-'}</td>
+                  <td data-label="Status">{getStatusBadge(r.status)}</td>
+                  <td data-label="Aksi" style={{ textAlign: 'center' }}>
                     <div style={{ display: 'inline-flex', gap: '6px' }}>
                       <Link to={`/reports/${r.id}`} className="btn btn-secondary btn-sm btn-icon" title="Lihat Detail">
                         <FiEye />

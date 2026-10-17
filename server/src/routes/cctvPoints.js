@@ -7,10 +7,10 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 router.use(authenticate);
 router.get('/station/:stationId', cctvPointController.getByStation);
-router.post('/', authorize('assistant_manager'), cctvPointController.create);
-router.post('/import', authorize('assistant_manager'), upload.single('file'), cctvPointController.importCCTVPoints);
-router.put('/:id', authorize('assistant_manager'), cctvPointController.update);
-router.patch('/reorder', authorize('assistant_manager'), cctvPointController.reorder);
-router.delete('/:id', authorize('assistant_manager'), cctvPointController.remove);
+router.post('/', authorize('admin'), cctvPointController.create);
+router.post('/import', authorize('admin'), upload.single('file'), cctvPointController.importCCTVPoints);
+router.put('/:id', authorize('admin'), cctvPointController.update);
+router.patch('/reorder', authorize('admin'), cctvPointController.reorder);
+router.delete('/:id', authorize('admin'), cctvPointController.remove);
 
 module.exports = router;
