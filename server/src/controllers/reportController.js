@@ -116,7 +116,7 @@ exports.create = async (req, res, next) => {
       validateClientDates(req.body, schedule);
       const changes = validateStatusChanges(details, initialDetails, calendar);
       const changedById = new Map(changes.map((item) => [item.cctv_point_id, item.changes]));
-      const no_ref = await allocateReportReference(calendar.bulan, calendar.tahun, transaction);
+      const no_ref = await allocateReportReference(calendar.bulan, calendar.tahun, station.kode_stasiun, transaction);
       const report = await MonitoringReport.create({ station_id, bulan: calendar.bulan, tahun: calendar.tahun,
         calendar_scheme: 'monday', no_ref, catatan, ...schedule, ...checkedFields(changes, calendar), status: 'draft', created_by: req.user.id }, { transaction });
       await MonitoringDetail.bulkCreate(initialDetails.map((detail) => ({

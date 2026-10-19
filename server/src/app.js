@@ -52,7 +52,7 @@ async function start() {
     console.log('✅ Models synced with alter: true.');
 
     const assignedReferences = await initializeReportReferences();
-    console.log(`✅ Nomor referensi siap. ${assignedReferences} laporan lama diberi nomor.`);
+    console.log(`✅ Nomor referensi siap. ${assignedReferences} laporan diperbarui ke format kode stasiun/urutan/bulan/tahun.`);
 
     app.listen(PORT, () => {
       console.log(`🚀 Server running on http://localhost:${PORT}`);

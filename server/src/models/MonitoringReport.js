@@ -22,7 +22,7 @@ const MonitoringReport = sequelize.define('MonitoringReport', {
     validate: { isInt: true, min: 1900, max: 9999 },
   },
   no_ref: {
-    type: DataTypes.STRING(20),
+    type: DataTypes.STRING(40),
   },
   calendar_scheme: {
     type: DataTypes.ENUM('fixed_dates', 'monday'),

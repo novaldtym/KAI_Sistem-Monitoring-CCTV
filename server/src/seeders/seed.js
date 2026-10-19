@@ -76,7 +76,7 @@ async function seed() {
       station_id: stLempuyangan.id,
       bulan: 12,
       tahun: 2025,
-      no_ref: '001/01/2025',
+      no_ref: 'LPN/01/12/2025',
       tanggal_m1: '2025-12-05',
       tanggal_m2: '2025-12-12',
       tanggal_m3: '2025-12-19',

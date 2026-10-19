@@ -104,6 +104,8 @@ npm run dev
 
 ## 🔑 Role dan Akun Pengguna
 
+Nomor referensi laporan dibuat otomatis saat draft pertama disimpan, dengan format `KODE_STASIUN/URUTAN/BULAN/TAHUN`, misalnya `MGW/02/12/2026`. Urutan berlaku bersama untuk seluruh stasiun dalam satu bulan dan tahun, lalu kembali ke `01` pada periode baru. Mengedit draft tidak mengubah nomor. Kode menggunakan Master Stasiun seperti pada peta dashboard; stasiun harus memiliki kode sebelum laporan dibuat. Saat backend dijalankan, referensi lama yang memakai format angka akan ditambahkan kode stasiun dengan urutan dan waktu perubahan tetap dipertahankan.
+
 | Role | Hak akses |
 |------|-----------|
 | Manager | Membaca laporan seluruh petugas, mencetak PDF, approve/reject, dan melihat peta pemeriksaan |
