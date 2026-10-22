@@ -33,7 +33,10 @@ const ReviewApprovalPage = () => {
   const fetchPendingReports = () => {
     setLoading(true);
     getReportsApi({ status: "submitted" })
-      .then((res) => setReports(res.data.data))
+      .then((res) => {
+        setReports(res.data.data);
+        window.dispatchEvent(new Event('reports-updated'));
+      })
       .catch(() => toast.error("Gagal memuat daftar review."))
       .finally(() => setLoading(false));
   };

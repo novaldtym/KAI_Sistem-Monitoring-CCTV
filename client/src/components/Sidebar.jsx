@@ -33,12 +33,20 @@ const Sidebar = ({ isMobile, isOpen, navigationRef, onNavigate, onClose }) => {
     location.pathname.endsWith('/edit');
 
   useEffect(() => {
-    if (user && REVIEW_ROLES.includes(user.role)) {
+    if (!user || !REVIEW_ROLES.includes(user.role)) return;
+
+    const refreshCount = () => {
       getPendingCountApi()
         .then((res) => setPendingCount(res.data.data.pendingCount))
         .catch(() => {});
-    }
-  }, [user]);
+    };
+
+    refreshCount();
+    window.addEventListener('reports-updated', refreshCount);
+    return () => {
+      window.removeEventListener('reports-updated', refreshCount);
+    };
+  }, [user, location.pathname]);
 
   const handleLogout = () => {
     onNavigate();

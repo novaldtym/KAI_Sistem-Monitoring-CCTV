@@ -89,6 +89,7 @@ const ReportDetailPage = () => {
         await rejectReportApi(report.id, komentar);
         toast.success("Laporan berhasil di-reject.");
       }
+      window.dispatchEvent(new Event('reports-updated'));
       setModalType(null);
       setKomentar("");
       // Reload report to reflect new status

@@ -44,3 +44,5 @@ server/pdf_exact_preview.png
 
 # Local data files
 /data/
+
+initial-users.json

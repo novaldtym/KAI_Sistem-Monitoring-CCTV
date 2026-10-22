@@ -147,6 +147,7 @@ function ReportForm() {
       }
       if (submit) {
         await submitReportApi(targetId);
+        window.dispatchEvent(new Event('reports-updated'));
         toast.success('Laporan berhasil dikirim untuk review.');
         navigate('/reports');
       } else {
