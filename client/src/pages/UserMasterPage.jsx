@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 import { getUsersApi, createUserApi, updateUserApi, deleteUserApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { ROLE_LABELS } from '../constants/roles';
@@ -124,12 +125,29 @@ export default function UserMasterPage() {
       <input id="user-search" className="form-control" type="search" placeholder="Nama, nomor pegawai, atau role" value={search} onChange={(event) => setSearch(event.target.value)} />
     </div>
     {loading ? <p role="status">Memuat daftar user...</p> : error ? <div role="alert" className="card"><p>{error}</p><button className="btn btn-secondary" onClick={loadUsers}>Coba Lagi</button></div> :
-      <div className="table-container mobile-card-container"><table className="data-table mobile-cards"><thead><tr><th>No.</th><th>Username / NIPP / NIPKWT</th><th>Nama</th><th>Role</th><th>Jabatan</th><th>Status</th><th>Aksi</th></tr></thead>
+      <div className="table-container mobile-card-container"><table className="data-table mobile-cards"><thead><tr><th>No.</th><th>Username / NIPP / NIPKWT</th><th>Nama</th><th>Role</th><th>Jabatan</th><th>Status</th><th style={{ textAlign: 'center', width: '120px' }}>Aksi</th></tr></thead>
         <tbody>{filtered.length ? filtered.map((item, index) => <tr key={item.id}>
           <td data-label="No.">{index + 1}</td><td data-label="Username">{item.nipp}</td><td data-label="Nama">{item.nama}</td><td data-label="Role">{ROLE_LABELS[item.role]}</td><td data-label="Jabatan">{item.jabatan || '-'}</td><td data-label="Status">{item.is_active ? 'Aktif' : 'Nonaktif'}</td>
-          <td data-label="Aksi"><div className="account-actions">
-            <button className="btn btn-secondary" disabled={editingUser !== undefined || deleting !== null} onClick={() => setEditingUser(item)} aria-label={`Edit ${item.nama}`}>Edit</button>
-            <button className="btn btn-danger" disabled={item.id === user.id || deleting !== null || editingUser !== undefined} onClick={() => remove(item)} title={item.id === user.id ? 'Akun sendiri tidak dapat dihapus.' : undefined} aria-label={`Hapus ${item.nama}`}>{deleting === item.id ? 'Menghapus...' : 'Hapus'}</button>
+          <td data-label="Aksi" style={{ textAlign: 'center' }}><div className="table-row-actions">
+            <button
+              className="btn btn-secondary btn-sm btn-icon"
+              disabled={editingUser !== undefined || deleting !== null}
+              onClick={() => setEditingUser(item)}
+              aria-label={`Edit ${item.nama}`}
+              title="Edit"
+            >
+              <FiEdit2 />
+            </button>
+            <button
+              className="btn btn-secondary btn-sm btn-icon"
+              disabled={item.id === user.id || deleting !== null || editingUser !== undefined}
+              onClick={() => remove(item)}
+              style={{ color: 'var(--status-danger)' }}
+              title={item.id === user.id ? 'Akun sendiri tidak dapat dihapus.' : 'Hapus'}
+              aria-label={`Hapus ${item.nama}`}
+            >
+              <FiTrash2 />
+            </button>
           </div></td>
         </tr>) : <tr><td colSpan={7}>{search ? 'Tidak ada user yang cocok. Ubah kata pencarian.' : 'Belum ada user. Gunakan Tambah User untuk membuat akun.'}</td></tr>}</tbody>
       </table></div>}
